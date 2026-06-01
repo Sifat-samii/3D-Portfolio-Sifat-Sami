@@ -1,0 +1,29 @@
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Sifat Mahmud — Product Manager, Creative Technologist & Builder",
+  description:
+    "Interactive 3D portfolio showcasing product management, software projects, music, creative work, events, academics, and professional experience.",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "Sifat Mahmud — Product Manager, Creative Technologist & Builder",
+    description:
+      "Interactive 3D portfolio showcasing product management, software projects, music, creative work, events, academics, and professional experience.",
+    type: "website",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
