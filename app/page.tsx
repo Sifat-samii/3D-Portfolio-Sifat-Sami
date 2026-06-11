@@ -1,6 +1,5 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { ControlGuide } from "@/components/canvas/ControlGuide";
 import { InteractionPrompt } from "@/components/canvas/InteractionPrompt";
 import { PortfolioCanvas } from "@/components/canvas/PortfolioCanvas";
@@ -9,29 +8,22 @@ import { OverlayManager } from "@/components/overlays/OverlayManager";
 import { MiniMap } from "@/components/shared/MiniMap";
 import { RoomEntryToast } from "@/components/shared/RoomEntryToast";
 import { InputProvider } from "@/components/systems/InputProvider";
-import { MOBILE_BREAKPOINT } from "@/lib/constants";
-
-function subscribeToViewport(onStoreChange: () => void) {
-  window.addEventListener("resize", onStoreChange);
-  return () => window.removeEventListener("resize", onStoreChange);
-}
-
-function getIsMobileFallback() {
-  return window.innerWidth < MOBILE_BREAKPOINT;
-}
+import { useViewportMode } from "@/components/systems/useViewportMode";
 
 function PortfolioExperience() {
-  const isMobileFallback = useSyncExternalStore(
-    subscribeToViewport,
-    getIsMobileFallback,
-    () => false,
-  );
+  const { show3D, showMobileLayout, isWebGLFallback } = useViewportMode();
 
   return (
     <>
-      {!isMobileFallback ? <PortfolioCanvas /> : null}
-      <MobilePortfolio />
-      {!isMobileFallback ? (
+      <a
+        href="#portfolio-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:border focus:border-white/20 focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+      >
+        Skip to content
+      </a>
+      {show3D ? <PortfolioCanvas /> : null}
+      {showMobileLayout ? <MobilePortfolio isWebGLFallback={isWebGLFallback} /> : null}
+      {show3D ? (
         <>
           <ControlGuide />
           <MiniMap />

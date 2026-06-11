@@ -9,7 +9,6 @@ type PortfolioState = {
   activeOverlay: OverlayId | null;
   isOverlayOpen: boolean;
   isTransitioning: boolean;
-  isMobileFallback: boolean;
   setCurrentRoom: (roomId: RoomId) => void;
   setPreviousRoom: (roomId: RoomId | null) => void;
   setNearbyDoor: (doorId: DoorId | null) => void;
@@ -17,7 +16,6 @@ type PortfolioState = {
   openOverlay: (overlayId: OverlayId) => void;
   closeOverlay: () => void;
   setTransitioning: (isTransitioning: boolean) => void;
-  setMobileFallback: (isMobileFallback: boolean) => void;
 };
 
 export const usePortfolioStore = create<PortfolioState>((set) => ({
@@ -28,7 +26,6 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   activeOverlay: null,
   isOverlayOpen: false,
   isTransitioning: false,
-  isMobileFallback: false,
   setCurrentRoom: (roomId) =>
     set((state) => ({ previousRoom: state.currentRoom, currentRoom: roomId })),
   setPreviousRoom: (roomId) => set({ previousRoom: roomId }),
@@ -37,5 +34,4 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   openOverlay: (overlayId) => set({ activeOverlay: overlayId, isOverlayOpen: true }),
   closeOverlay: () => set({ activeOverlay: null, isOverlayOpen: false }),
   setTransitioning: (isTransitioning) => set({ isTransitioning }),
-  setMobileFallback: (isMobileFallback) => set({ isMobileFallback }),
 }));

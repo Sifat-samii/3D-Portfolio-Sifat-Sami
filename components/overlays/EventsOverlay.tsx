@@ -5,6 +5,7 @@ import { events } from "@/data/events";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getOverlayAccent } from "@/lib/overlayTheme";
 import { BaseOverlay } from "@/components/overlays/BaseOverlay";
 
 const titles: Partial<Record<OverlayId, string>> = {
@@ -15,10 +16,13 @@ const titles: Partial<Record<OverlayId, string>> = {
 };
 
 export function EventsOverlay({ overlayId, onClose }: { overlayId: OverlayId; onClose: () => void }) {
+  const accent = getOverlayAccent(overlayId);
+
   return (
     <BaseOverlay
       title={titles[overlayId] ?? "Events, Management & Business"}
       subtitle="Event planning, campaigns, brand activations, leadership, and business coordination."
+      accentColor={accent}
       onClose={onClose}
     >
       {overlayId === "eventCaseStudies" ? (

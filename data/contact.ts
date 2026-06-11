@@ -5,5 +5,6 @@ export const contact: ContactInfo = {
   linkedin: "https://linkedin.com",
   github: "https://github.com",
   website: "#",
+  resumeUrl: "#",
   callToAction: "Have a product, creative, or operations idea? Let's build something useful.",
 };

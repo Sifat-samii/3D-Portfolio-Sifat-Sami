@@ -20,7 +20,11 @@ export function InteractionPrompt() {
   const key = door ? `door-${door.id}` : object ? `object-${object.id}` : "";
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-8 z-30 hidden justify-center md:flex">
+    <div
+      aria-live="polite"
+      aria-atomic="true"
+      className="pointer-events-none fixed inset-x-0 bottom-8 z-30 hidden justify-center md:flex"
+    >
       <AnimatePresence mode="wait">
         {visible ? (
           <motion.div

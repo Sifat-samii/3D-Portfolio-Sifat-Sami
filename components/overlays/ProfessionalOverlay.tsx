@@ -5,6 +5,8 @@ import { experience } from "@/data/experience";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getOverlayAccent } from "@/lib/overlayTheme";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { BaseOverlay } from "@/components/overlays/BaseOverlay";
 
 const titles: Partial<Record<OverlayId, string>> = {
@@ -15,10 +17,13 @@ const titles: Partial<Record<OverlayId, string>> = {
 };
 
 export function ProfessionalOverlay({ overlayId, onClose }: { overlayId: OverlayId; onClose: () => void }) {
+  const accent = getOverlayAccent(overlayId);
+
   return (
     <BaseOverlay
       title={titles[overlayId] ?? "Professional Work"}
       subtitle="Product and project management, production automation, operations, and measurable outcomes."
+      accentColor={accent}
       onClose={onClose}
     >
       {experience.length === 0 ? (
@@ -26,7 +31,7 @@ export function ProfessionalOverlay({ overlayId, onClose }: { overlayId: Overlay
       ) : (
         experience.map((item) => (
           <Card key={`${item.company}-${item.role}`} className="mb-4 last:mb-0">
-            <p className="text-sm uppercase tracking-[0.25em] text-sky-300">{item.company}</p>
+            <SectionLabel accentColor={accent}>{item.company}</SectionLabel>
             <h3 className="mt-2 text-xl font-semibold">{item.role}</h3>
             <p className="mt-1 text-sm text-slate-400">{item.duration}</p>
 

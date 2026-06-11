@@ -28,6 +28,7 @@ export function MiniMap() {
 
   return (
     <motion.aside
+      aria-label={`Room map. Currently in ${rooms.find((r) => r.id === currentRoom)?.label ?? "unknown room"}.`}
       initial={{ x: 20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.4, delay: 0.3 }}

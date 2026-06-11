@@ -5,6 +5,8 @@ import { music } from "@/data/music";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getOverlayAccent } from "@/lib/overlayTheme";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { BaseOverlay } from "@/components/overlays/BaseOverlay";
 
 const titles: Partial<Record<OverlayId, string>> = {
@@ -14,17 +16,24 @@ const titles: Partial<Record<OverlayId, string>> = {
 };
 
 export function MusicOverlay({ overlayId, onClose }: { overlayId: OverlayId; onClose: () => void }) {
+  const accent = getOverlayAccent(overlayId);
+
   return (
-    <BaseOverlay title={titles[overlayId] ?? "Music"} subtitle={music.intro} onClose={onClose}>
+    <BaseOverlay
+      title={titles[overlayId] ?? "Music"}
+      subtitle={music.intro}
+      accentColor={accent}
+      onClose={onClose}
+    >
       {overlayId === "musicProfile" ? (
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
-            <p className="text-sm uppercase tracking-[0.25em] text-fuchsia-300">Role</p>
+            <SectionLabel accentColor={accent}>Role</SectionLabel>
             <p className="mt-2 text-xl font-semibold">{music.role}</p>
             <p className="mt-2 text-sm text-slate-300">{music.bandName}</p>
           </Card>
           <Card>
-            <p className="text-sm uppercase tracking-[0.25em] text-rose-300">Links</p>
+            <SectionLabel accentColor={accent}>Links</SectionLabel>
             <div className="mt-3 flex flex-col gap-2">
               {music.links.length === 0 ? (
                 <EmptyState />
@@ -33,6 +42,7 @@ export function MusicOverlay({ overlayId, onClose }: { overlayId: OverlayId; onC
                   <a
                     key={link.label}
                     href={link.href}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-cyan-300 underline-offset-2 hover:underline"
                   >
@@ -59,7 +69,7 @@ export function MusicOverlay({ overlayId, onClose }: { overlayId: OverlayId; onC
 
       {overlayId === "audioPreview" ? (
         <Card>
-          <p className="text-sm uppercase tracking-[0.25em] text-rose-300">Future Audio</p>
+          <SectionLabel accentColor={accent}>Future Audio</SectionLabel>
           <p className="mt-2 text-sm leading-6 text-slate-300">
             Audio previews are intentionally placeholders in Phase 1. A lightweight audio system can be added later.
           </p>

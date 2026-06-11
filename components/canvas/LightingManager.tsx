@@ -2,18 +2,21 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { Color, MathUtils, type AmbientLight, type Fog, type HemisphereLight } from "three";
+import { Color, MathUtils, type AmbientLight, type DirectionalLight, type Fog, type HemisphereLight } from "three";
 import { lightingPresets } from "@/lib/lightingPresets";
 import { roomById } from "@/lib/roomConfig";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
 export function LightingManager() {
   const currentRoom = usePortfolioStore((state) => state.currentRoom);
-  const preset = lightingPresets[roomById[currentRoom].lightingPreset];
+  const room = roomById[currentRoom];
+  const preset = lightingPresets[room.lightingPreset];
+  const [roomX, , roomZ] = room.position;
 
   const ambientRef = useRef<AmbientLight>(null);
   const hemiRef = useRef<HemisphereLight>(null);
   const fogRef = useRef<Fog>(null);
+  const directionalRef = useRef<DirectionalLight>(null);
   const tmpColor = useRef(new Color());
 
   useFrame((_, delta) => {
@@ -48,6 +51,11 @@ export function LightingManager() {
       fogRef.current.near = MathUtils.lerp(fogRef.current.near, preset.fogNear, damping);
       fogRef.current.far = MathUtils.lerp(fogRef.current.far, preset.fogFar, damping);
     }
+
+    if (directionalRef.current) {
+      directionalRef.current.position.x = MathUtils.lerp(directionalRef.current.position.x, roomX + 6, damping);
+      directionalRef.current.position.z = MathUtils.lerp(directionalRef.current.position.z, roomZ + 8, damping);
+    }
   });
 
   return (
@@ -64,7 +72,12 @@ export function LightingManager() {
         groundColor={preset.hemiGround}
         intensity={preset.hemiIntensity}
       />
-      <directionalLight position={[6, 14, 8]} intensity={0.55} color="#ffffff" />
+      <directionalLight
+        ref={directionalRef}
+        position={[roomX + 6, 14, roomZ + 8]}
+        intensity={0.55}
+        color="#ffffff"
+      />
     </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Sparkles } from "@react-three/drei";
+import { usePortfolioStore } from "@/store/usePortfolioStore";
 import type { RoomConfig } from "@/types/portfolio";
 
 type RoomAtmosphereProps = {
@@ -11,6 +12,9 @@ type RoomAtmosphereProps = {
 };
 
 export function RoomAtmosphere({ room, count = 22, speed = 0.32, size = 2.4 }: RoomAtmosphereProps) {
+  const currentRoom = usePortfolioStore((state) => state.currentRoom);
+  if (currentRoom !== room.id) return null;
+
   const [cx, , cz] = room.position;
   const [width, , depth] = room.size;
 

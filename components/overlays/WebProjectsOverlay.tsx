@@ -2,7 +2,9 @@
 
 import type { OverlayId } from "@/types/portfolio";
 import { techStack, webProjects } from "@/data/webProjects";
+import { getOverlayAccent } from "@/lib/overlayTheme";
 import { Badge } from "@/components/ui/Badge";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { BaseOverlay } from "@/components/overlays/BaseOverlay";
@@ -22,6 +24,7 @@ const subtitles: Partial<Record<OverlayId, string>> = {
 };
 
 export function WebProjectsOverlay({ overlayId, onClose }: { overlayId: OverlayId; onClose: () => void }) {
+  const accent = getOverlayAccent(overlayId);
   const productProjects = webProjects.filter((project) => /product/i.test(project.type));
   const automationSkills = techStack.filter(
     (skill) => skill.category === "Systems" || /automation|ai/i.test(skill.label),
@@ -30,7 +33,11 @@ export function WebProjectsOverlay({ overlayId, onClose }: { overlayId: OverlayI
   return (
     <BaseOverlay
       title={titles[overlayId] ?? "Web & Digital Services"}
-      subtitle={subtitles[overlayId] ?? "Websites, software systems, product work, automation, AI workflows, and technical case studies."}
+      subtitle={
+        subtitles[overlayId] ??
+        "Websites, software systems, product work, automation, AI workflows, and technical case studies."
+      }
+      accentColor={accent}
       onClose={onClose}
     >
       {overlayId === "webProjects" ? (
@@ -52,6 +59,13 @@ export function WebProjectsOverlay({ overlayId, onClose }: { overlayId: OverlayI
                     <Badge key={`${project.title}-${tech}`}>{tech}</Badge>
                   ))}
                 </div>
+                {project.link ? (
+                  <div className="mt-4">
+                    <ButtonLink href={project.link} variant="ghost" className="px-0">
+                      View project →
+                    </ButtonLink>
+                  </div>
+                ) : null}
               </Card>
             ))
           )}
@@ -82,6 +96,13 @@ export function WebProjectsOverlay({ overlayId, onClose }: { overlayId: OverlayI
                     <li key={highlight}>{highlight}</li>
                   ))}
                 </ul>
+                {project.link ? (
+                  <div className="mt-4">
+                    <ButtonLink href={project.link} variant="ghost" className="px-0">
+                      View case study →
+                    </ButtonLink>
+                  </div>
+                ) : null}
               </Card>
             ))
           )}

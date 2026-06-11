@@ -5,6 +5,8 @@ import { academics } from "@/data/academics";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getOverlayAccent } from "@/lib/overlayTheme";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { BaseOverlay } from "@/components/overlays/BaseOverlay";
 
 const titles: Partial<Record<OverlayId, string>> = {
@@ -14,10 +16,13 @@ const titles: Partial<Record<OverlayId, string>> = {
 };
 
 export function AcademicsOverlay({ overlayId, onClose }: { overlayId: OverlayId; onClose: () => void }) {
+  const accent = getOverlayAccent(overlayId);
+
   return (
     <BaseOverlay
       title={titles[overlayId] ?? "Academics"}
       subtitle="Education, research, certifications, publications, and academic goals."
+      accentColor={accent}
       onClose={onClose}
     >
       {overlayId === "certifications" ? (
@@ -34,7 +39,7 @@ export function AcademicsOverlay({ overlayId, onClose }: { overlayId: OverlayId;
 
       {overlayId === "researchPublication" ? (
         <Card>
-          <p className="text-sm uppercase tracking-[0.25em] text-emerald-300">Research</p>
+          <SectionLabel accentColor={accent}>Research</SectionLabel>
           <p className="mt-2 text-sm text-slate-300">{academics.thesis}</p>
           <p className="mt-2 text-sm text-slate-300">{academics.publication}</p>
         </Card>
@@ -43,12 +48,12 @@ export function AcademicsOverlay({ overlayId, onClose }: { overlayId: OverlayId;
       {overlayId === "academicBackground" ? (
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
-            <p className="text-sm uppercase tracking-[0.25em] text-emerald-300">Degree</p>
+            <SectionLabel accentColor={accent}>Degree</SectionLabel>
             <p className="mt-2 text-xl font-semibold">{academics.degree}</p>
             <p className="mt-2 text-sm text-slate-300">{academics.university}</p>
           </Card>
           <Card>
-            <p className="text-sm uppercase tracking-[0.25em] text-emerald-300">Achievements</p>
+            <SectionLabel accentColor={accent}>Achievements</SectionLabel>
             {academics.achievements.length === 0 ? (
               <EmptyState />
             ) : (

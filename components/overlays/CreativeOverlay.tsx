@@ -5,6 +5,7 @@ import { creative } from "@/data/creative";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getOverlayAccent } from "@/lib/overlayTheme";
 import { BaseOverlay } from "@/components/overlays/BaseOverlay";
 
 const titles: Partial<Record<OverlayId, string>> = {
@@ -14,10 +15,13 @@ const titles: Partial<Record<OverlayId, string>> = {
 };
 
 export function CreativeOverlay({ overlayId, onClose }: { overlayId: OverlayId; onClose: () => void }) {
+  const accent = getOverlayAccent(overlayId);
+
   return (
     <BaseOverlay
       title={titles[overlayId] ?? "Creative Work"}
       subtitle="Handmade products, paintings, crafts, product design, and brand visual direction."
+      accentColor={accent}
       onClose={onClose}
     >
       {overlayId === "beadsBonita" ? (

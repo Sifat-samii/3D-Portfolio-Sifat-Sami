@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Interactive 3D portfolio showcasing product management, software projects, music, creative work, events, academics, and professional experience.",
   icons: {
-    icon: "/favicon.ico",
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
   openGraph: {
     title: "Sifat Mahmud — Product Manager, Creative Technologist & Builder",

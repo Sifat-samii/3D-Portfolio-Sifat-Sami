@@ -15,16 +15,16 @@ type RoomLightsProps = {
 
 export function RoomLights({ roomId, position }: RoomLightsProps) {
   const currentRoom = usePortfolioStore((state) => state.currentRoom);
-  const preset = lightingPresets[roomById[roomId].lightingPreset];
   const isActive = currentRoom === roomId;
+  const preset = lightingPresets[roomById[roomId].lightingPreset];
 
   const keyRef = useRef<PointLight>(null);
   const accentRef = useRef<PointLight>(null);
   const fillRef = useRef<PointLight>(null);
 
-  const targetKey = isActive ? preset.activeIntensity : preset.inactiveIntensity;
-  const targetAccent = isActive ? preset.activeIntensity * 0.55 : preset.inactiveIntensity * 0.4;
-  const targetFill = isActive ? preset.activeIntensity * 0.25 : preset.inactiveIntensity * 0.18;
+  const targetKey = isActive ? preset.activeIntensity : 0;
+  const targetAccent = isActive ? preset.activeIntensity * 0.55 : 0;
+  const targetFill = isActive ? preset.activeIntensity * 0.25 : 0;
 
   useFrame((_, delta) => {
     const damping = 1 - Math.pow(0.0025, delta);
@@ -39,6 +39,8 @@ export function RoomLights({ roomId, position }: RoomLightsProps) {
     }
   });
 
+  if (!isActive) return null;
+
   return (
     <group>
       <pointLight
@@ -46,7 +48,7 @@ export function RoomLights({ roomId, position }: RoomLightsProps) {
         position={[position[0], 3.6, position[2]]}
         color={preset.color}
         intensity={targetKey}
-        distance={isActive ? 16 : 9}
+        distance={16}
         decay={1.65}
       />
       <pointLight
@@ -54,7 +56,7 @@ export function RoomLights({ roomId, position }: RoomLightsProps) {
         position={[position[0] - 2.4, 2.4, position[2] - 1.8]}
         color={preset.accent}
         intensity={targetAccent}
-        distance={isActive ? 11 : 6}
+        distance={11}
         decay={1.8}
       />
       <pointLight
@@ -62,7 +64,7 @@ export function RoomLights({ roomId, position }: RoomLightsProps) {
         position={[position[0] + 2.4, 1.6, position[2] + 2.2]}
         color={preset.color}
         intensity={targetFill}
-        distance={isActive ? 9 : 5}
+        distance={9}
         decay={1.9}
       />
     </group>

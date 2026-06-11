@@ -154,5 +154,6 @@ export type ContactInfo = {
   linkedin: string;
   github: string;
   website: string;
+  resumeUrl: string;
   callToAction: string;
 };

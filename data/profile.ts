@@ -1,3 +1,5 @@
+import { contact } from "@/data/contact";
+
 export const profile = {
   name: "Sifat Mahmud",
   title: "Product Manager, Creative Technologist & Builder",
@@ -6,11 +8,11 @@ export const profile = {
   location: "Dhaka, Bangladesh",
   currentFocus:
     "Building practical digital products, automation workflows, and creative experiences with measurable impact.",
-  email: "hello@example.com",
-  resumeUrl: "#",
+  email: contact.email,
+  resumeUrl: contact.resumeUrl,
   socials: {
-    linkedin: "https://linkedin.com",
-    github: "https://github.com",
-    website: "#",
+    linkedin: contact.linkedin,
+    github: contact.github,
+    website: contact.website,
   },
 };
