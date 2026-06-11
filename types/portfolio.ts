@@ -16,6 +16,7 @@ export type ObjectId =
   | "guitar"
   | "poster-wall"
   | "speaker"
+  | "tv-screen"
   | "main-monitor"
   | "whiteboard"
   | "dashboard-screen"
@@ -42,6 +43,9 @@ export type OverlayId =
   | "musicProfile"
   | "bandProjects"
   | "audioPreview"
+  | "musicTvMenu"
+  | "guitarJourney"
+  | "performances"
   | "webProjects"
   | "techStack"
   | "productCaseStudies"
@@ -106,6 +110,8 @@ export type InteractiveObjectConfig = {
   position: Vector3Tuple;
   shape?: "box" | "sphere" | "cylinder" | "plane";
   accentColor?: string;
+  /** Detection only — no 3D marker (same pattern as door proximity). */
+  proximityOnly?: boolean;
 };
 
 export type RoomConfig = {

@@ -138,7 +138,18 @@ export const rooms: RoomConfig[] = [
         accentColor: "#ffb84d",
       },
     ],
-    objects: [],
+    objects: [
+      {
+        id: "tv-screen",
+        label: "TV Screen",
+        roomId: "music",
+        overlayId: "musicTvMenu",
+        // Floor contact in front of MediaWall TV (centre x=-14.5, screen z≈-5.88)
+        position: [-14.5, 0.7, -4.85],
+        proximityOnly: true,
+        accentColor: "#ffd060",
+      },
+    ],
   },
   {
     id: "web",

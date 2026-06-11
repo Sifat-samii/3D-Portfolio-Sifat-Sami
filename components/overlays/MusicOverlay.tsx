@@ -13,6 +13,8 @@ const titles: Partial<Record<OverlayId, string>> = {
   musicProfile: "Music Profile",
   bandProjects: "Band & Projects",
   audioPreview: "Audio Preview",
+  guitarJourney: music.guitarJourney.title,
+  performances: music.performanceVideos.title,
 };
 
 export function MusicOverlay({ overlayId, onClose }: { overlayId: OverlayId; onClose: () => void }) {
@@ -74,6 +76,61 @@ export function MusicOverlay({ overlayId, onClose }: { overlayId: OverlayId; onC
             Audio previews are intentionally placeholders in Phase 1. A lightweight audio system can be added later.
           </p>
         </Card>
+      ) : null}
+
+      {overlayId === "guitarJourney" ? (
+        <div className="space-y-4">
+          <Card>
+            <p className="text-sm leading-7 text-slate-300">{music.guitarJourney.summary}</p>
+          </Card>
+          <div className="grid gap-3">
+            {music.guitarJourney.milestones.map((milestone) => (
+              <Card key={milestone.title}>
+                <SectionLabel accentColor={accent}>{milestone.year}</SectionLabel>
+                <p className="mt-2 font-semibold text-white">{milestone.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">{milestone.detail}</p>
+              </Card>
+            ))}
+          </div>
+          <Card>
+            <SectionLabel accentColor={accent}>Gear</SectionLabel>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {music.guitarJourney.gear.map((item) => (
+                <Badge key={item}>{item}</Badge>
+              ))}
+            </div>
+          </Card>
+        </div>
+      ) : null}
+
+      {overlayId === "performances" ? (
+        <div className="space-y-4">
+          <Card>
+            <p className="text-sm leading-7 text-slate-300">{music.performanceVideos.summary}</p>
+          </Card>
+          <div className="grid gap-3">
+            {music.performanceVideos.items.map((item) => (
+              <Card key={item.title}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-white">{item.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">{item.description}</p>
+                  </div>
+                  <Badge>{item.platform}</Badge>
+                </div>
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-block text-sm font-medium underline-offset-2 hover:underline"
+                  style={{ color: accent }}
+                >
+                  Watch video
+                </a>
+              </Card>
+            ))}
+          </div>
+        </div>
       ) : null}
     </BaseOverlay>
   );

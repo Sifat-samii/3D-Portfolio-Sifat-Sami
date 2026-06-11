@@ -192,9 +192,11 @@ export function MusicRoom() {
       {room.doors.map((door) => (
         <Door key={door.id} door={door} />
       ))}
-      {room.objects.map((object) => (
-        <InteractiveObject key={object.id} object={object} />
-      ))}
+      {room.objects
+        .filter((object) => !object.proximityOnly)
+        .map((object) => (
+          <InteractiveObject key={object.id} object={object} />
+        ))}
     </RoomShell>
   );
 }
