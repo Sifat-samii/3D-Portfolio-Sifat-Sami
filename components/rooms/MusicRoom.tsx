@@ -9,9 +9,11 @@ import { roomById } from "@/lib/roomConfig";
 import { MusicPosterWall } from "@/components/rooms/MusicPosterWall";
 import { GuitarWallDisplay } from "@/components/rooms/GuitarWallDisplay";
 import { MediaWall } from "@/components/rooms/MediaWall";
+import { NorthWallBandPosters } from "@/components/rooms/NorthWallBandPosters";
 import { StudioDesk } from "@/components/rooms/StudioDesk";
 import { StudioFloorMat } from "@/components/rooms/StudioFloorMat";
 import { DrumKit } from "@/components/rooms/DrumKit";
+import { TvWatchCouch } from "@/components/rooms/TvWatchCouch";
 
 /**
  * Room geometry reference (15 m wide, 12 m deep):
@@ -100,6 +102,10 @@ export function MusicRoom() {
       {/* ── MEDIA WALL — LED TV + HiFi system, north wall centre ── */}
 
       <MediaWall />
+      <NorthWallBandPosters />
+
+      {/* ── TV LOUNGE — sofa facing the media wall ───────────────── */}
+      <TvWatchCouch />
 
       {/* ── STUDIO DESK — professional workstation, poster wall ── */}
 
