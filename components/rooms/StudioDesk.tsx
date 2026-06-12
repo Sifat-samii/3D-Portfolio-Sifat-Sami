@@ -22,8 +22,10 @@
  * (plane local +Z normal → world +X after the yaw).
  */
 
+import { scaleWorldZ } from "@/lib/roomLayout";
+
 const S = 1.6;                      // global display scale
-const POS: [number, number, number] = [-21.1, 0.1, 0];
+const POS: [number, number, number] = [-21.1, 0.1, scaleWorldZ(0)];
 
 // ── Key local heights ─────────────────────────────────────────────────────────
 const TOP = 0.75;                   // desk surface

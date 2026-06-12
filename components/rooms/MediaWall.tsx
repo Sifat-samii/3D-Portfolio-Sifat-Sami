@@ -1,5 +1,7 @@
 "use client";
 
+import { scaleWorldZ } from "@/lib/roomLayout";
+
 /**
  * Media wall — big LED TV + HiFi sound system, centre of the north wall.
  *
@@ -25,10 +27,11 @@ const CABINET = "#16130f"; // dark walnut-black furniture
 const METAL   = "#1a1816";
 const GRILLE  = "#0e0e10";
 
+const MEDIA_GROUP_Z = scaleWorldZ(-5.88) - WZ;
+
 export function MediaWall() {
   return (
-    /* z+1.0: follows north wall after room deepened to z[-6,6] */
-    <group position={[0, 0, 1.0]}>
+    <group position={[0, 0, MEDIA_GROUP_Z]}>
       {/* ════════════════════════ LED TV ════════════════════════ */}
 
       {/* Wall mount plate */}

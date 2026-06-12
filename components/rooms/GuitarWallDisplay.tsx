@@ -1,11 +1,14 @@
 "use client";
 
 import { WallMountedGuitar, type GuitarFinish, type GuitarShape } from "@/components/rooms/WallMountedGuitar";
+import { scaleWorldZ } from "@/lib/roomLayout";
+
+const z = scaleWorldZ;
 
 /**
  * East (door) wall guitar gallery — room interior x ∈ [-22, -7].
  * Inner wall face ≈ -7.09; guitars protrude westward (more negative x).
- * Door gap: z -3.2 → -0.8 (skipped).
+ * Door gap: layout z -3.2 → -0.8 (skipped; world coords scaled).
  */
 
 const WX = -7.09;
@@ -88,24 +91,15 @@ const WALL_GUITARS: WallGuitar[] = [
       inlay: "#c41e1e",
     },
   },
-  {
-    shape: "rg",
-    z: 5.2,
-    finish: {
-      body: "#6b1a1a",
-      neck: "#241407",
-      fretboard: "#1c1009",
-      inlay: "#ffd060",
-    },
-  },
+  /* Ibanez RG (z 5.2) — moved to floor stand at the south-east corner */
 ];
 
 export function GuitarWallDisplay() {
   return (
     <group>
       {/* Ceiling track along the full east wall */}
-      <mesh position={[WX - 0.06, 3.88, -0.5]}>
-        <boxGeometry args={[0.06, 0.05, 11.4]} />
+      <mesh position={[WX - 0.06, 3.88, z(-0.5)]}>
+        <boxGeometry args={[0.06, 0.05, 11.4 * 1.3]} />
         <meshStandardMaterial
           color="#1a1a1a"
           metalness={0.75}
@@ -122,7 +116,7 @@ export function GuitarWallDisplay() {
           finish={guitar.finish}
           wallX={WX}
           faceX={FACE_X}
-          z={guitar.z}
+          z={z(guitar.z)}
           scale={guitar.scale ?? 2.0}
         />
       ))}

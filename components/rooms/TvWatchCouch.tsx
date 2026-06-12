@@ -5,8 +5,10 @@
  * Centre aligned with TV at x = -14.5; back faces south (+Z), seat faces north (−Z).
  */
 
+import { scaleWorldZ } from "@/lib/roomLayout";
+
 const CX = -14.5;
-const CZ = -2.35;
+const CZ = scaleWorldZ(-2.35);
 const FLOOR_Y = 0.10;
 
 const LEATHER = "#2a2520";

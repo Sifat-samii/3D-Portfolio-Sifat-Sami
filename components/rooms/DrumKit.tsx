@@ -22,8 +22,10 @@
  * lathed bronze cymbals, matte-black double-braced hardware.
  */
 
+import { scaleWorldZ } from "@/lib/roomLayout";
+
 const S = 1.5;                                   // display scale
-const POS: [number, number, number] = [-14.5, 0.148, 3.8]; // mat surface
+const POS: [number, number, number] = [-14.5, 0.148, scaleWorldZ(3.8)]; // mat surface
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const BURST_EDGE = "#3a1c08";   // dark burst rim

@@ -2,6 +2,9 @@
 
 import { Suspense } from "react";
 import { useTexture } from "@react-three/drei";
+import { scaleWorldZ } from "@/lib/roomLayout";
+
+const z = scaleWorldZ;
 
 /**
  * West (poster) wall — 12 m deep, at x = -22, inner face x ≈ -21.91
@@ -33,9 +36,9 @@ const FRAME_BORDER = 0.055;
 const WALL_X     = -21.82; // world x of poster surface
 
 // Left/south edge columns — southernmost poster ~0.10 m inside south wall
-const LEFT_COLS = [5.26, 3.96, 2.66] as const;
+const LEFT_COLS = [5.26, 3.96, 2.66].map(z) as [number, number, number];
 // Right/north edge columns — northernmost poster ~0.10 m inside north wall
-const RIGHT_COLS = [-2.66, -3.96, -5.26] as const;
+const RIGHT_COLS = [-2.66, -3.96, -5.26].map(z) as [number, number, number];
 
 // Row y-centres (bottom → top)
 const ROW_Y = [1.15, 3.05] as const;

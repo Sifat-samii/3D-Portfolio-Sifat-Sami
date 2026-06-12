@@ -9,8 +9,10 @@ import * as THREE from "three";
  * in front of the workstation area.
  */
 
+import { scaleWorldZ } from "@/lib/roomLayout";
+
 const CX = -14.5;
-const CZ = 3.9;
+const CZ = scaleWorldZ(3.9);
 const MAT_W = 5.0;
 const MAT_D = 2.8;
 const CORNER_R = 0.22;
