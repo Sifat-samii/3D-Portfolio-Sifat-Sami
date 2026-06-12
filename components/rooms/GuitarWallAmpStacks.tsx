@@ -15,6 +15,8 @@ import { DEPTH_SCALE, scaleWorldZ } from "@/lib/roomLayout";
  */
 
 const EAST_WALL_X = -7.08;
+/** Nudge east-wall stacks closer to the wall (+X), away from the guitar gallery. */
+const EAST_STACK_WALL_INSET = 0.12;
 const FLOOR_Y = 0.10;
 const SCALE = 1.42;
 
@@ -97,7 +99,7 @@ const BRANDS: Record<AmpBrand, AmpBrandStyle> = {
 };
 
 function eastStackCenterX(): number {
-  return EAST_WALL_X - (CAB_X * SCALE) / 2 - 0.005;
+  return EAST_WALL_X - (CAB_X * SCALE) / 2 - 0.005 + EAST_STACK_WALL_INSET;
 }
 
 function northStackCenterZ(): number {

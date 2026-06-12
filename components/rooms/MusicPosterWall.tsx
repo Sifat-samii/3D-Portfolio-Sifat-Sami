@@ -18,11 +18,11 @@ const z = scaleWorldZ;
  *
  * Layout: split 6 + 6 clusters flush to both wall edges.
  *
- *   Left cluster (south edge): z = 5.26, 3.96, 2.66
- *   Right cluster (north edge): z = -2.66, -3.96, -5.26
+ *   Left cluster (south edge): z = 5.26, 4.16, 3.06
+ *   Right cluster (north edge): z = -3.06, -4.16, -5.26
  *
  * Poster size : 1.10 m wide (in z) × 1.60 m tall
- * Column gap  : 0.20 m
+ * Column gap  : 0 m (posters edge-to-edge)
  * Row gap     : 0.30 m
  * Row centres : y = 1.15 (bottom / eye level)  |  y = 3.05 (top)
  *
@@ -35,10 +35,24 @@ const POSTER_H   = 1.6;   // world Y span (unchanged)
 const FRAME_BORDER = 0.055;
 const WALL_X     = -21.82; // world x of poster surface
 
+const COLUMN_GAP = 0;
+const COL_SPACING = POSTER_W + COLUMN_GAP;
+
 // Left/south edge columns — southernmost poster ~0.10 m inside south wall
-const LEFT_COLS = [5.26, 3.96, 2.66].map(z) as [number, number, number];
+const SOUTH_EDGE_Z = 5.26;
+const LEFT_COLS = [
+  SOUTH_EDGE_Z,
+  SOUTH_EDGE_Z - COL_SPACING,
+  SOUTH_EDGE_Z - COL_SPACING * 2,
+].map(z) as [number, number, number];
+
 // Right/north edge columns — northernmost poster ~0.10 m inside north wall
-const RIGHT_COLS = [-2.66, -3.96, -5.26].map(z) as [number, number, number];
+const NORTH_EDGE_Z = -5.26;
+const RIGHT_COLS = [
+  NORTH_EDGE_Z + COL_SPACING * 2,
+  NORTH_EDGE_Z + COL_SPACING,
+  NORTH_EDGE_Z,
+].map(z) as [number, number, number];
 
 // Row y-centres (bottom → top)
 const ROW_Y = [1.15, 3.05] as const;

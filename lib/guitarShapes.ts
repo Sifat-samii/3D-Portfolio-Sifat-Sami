@@ -23,66 +23,86 @@ export const RG_BODY_DEPTH = 0.032;
 
 /**
  * Ibanez RG double-cutaway — right-handed front (+Z).
- * Deep scooped cutaways, sharp horn tips; longer bass horn on −X.
+ * +X = treble (player's right); −X = bass. Sides are nearly mirrored;
+ * bass horn extends only slightly further than treble (authentic but balanced).
  */
 export const RG_BODY_OUTLINE: ReadonlyArray<readonly [number, number]> = [
-  [0, -0.236],
+  [0, -0.238],
   // Treble lower bout (+X)
-  [0.098, -0.220],
-  [0.148, -0.182],
-  [0.176, -0.122],
-  [0.182, -0.058],
-  [0.176, 0.002],
-  [0.162, 0.052],
-  [0.148, 0.082],
-  // Treble cutaway scoop (pulls inward before horn)
-  [0.132, 0.102],
-  [0.114, 0.112],
-  [0.096, 0.116],
-  // Treble horn — sharp tip
-  [0.078, 0.142],
-  [0.058, 0.168],
-  [0.038, 0.188],
-  [0.024, 0.194],
-  // Neck pocket
-  [0.014, 0.184],
-  [0.008, 0.162],
-  [0.004, 0.142],
-  [0, 0.132],
-  [-0.004, 0.142],
-  [-0.008, 0.162],
-  [-0.014, 0.184],
-  // Bass horn — longer, sharper
-  [-0.032, 0.206],
-  [-0.066, 0.236],
-  [-0.108, 0.262],
-  [-0.152, 0.278],
-  [-0.166, 0.262],
-  [-0.154, 0.232],
+  [0.062, -0.228],
+  [0.118, -0.202],
+  [0.158, -0.162],
+  [0.182, -0.108],
+  [0.192, -0.048],
+  [0.190, 0.010],
+  [0.178, 0.060],
+  [0.160, 0.096],
+  [0.142, 0.112],
+  // Treble cutaway scoop
+  [0.122, 0.122],
+  [0.100, 0.126],
+  [0.088, 0.120],
+  // Treble upper horn
+  [0.092, 0.148],
+  [0.110, 0.178],
+  [0.118, 0.202],
+  [0.112, 0.214],
+  [0.094, 0.210],
+  [0.068, 0.192],
+  [0.040, 0.172],
+  [0.016, 0.154],
+  [0, 0.142],
+  // Bass side (−X) — pulled in to match treble proportions
+  [-0.016, 0.154],
+  [-0.040, 0.172],
+  [-0.068, 0.192],
+  [-0.094, 0.210],
+  [-0.112, 0.214],
+  [-0.118, 0.202],
+  [-0.110, 0.178],
+  [-0.092, 0.148],
   // Bass cutaway scoop
-  [-0.176, 0.178],
-  [-0.186, 0.122],
-  [-0.188, 0.062],
-  [-0.184, 0.002],
-  [-0.174, -0.068],
-  [-0.156, -0.134],
-  [-0.124, -0.188],
-  [-0.074, -0.224],
-  [0, -0.236],
+  [-0.088, 0.120],
+  [-0.100, 0.126],
+  [-0.122, 0.122],
+  [-0.142, 0.112],
+  [-0.160, 0.096],
+  [-0.178, 0.060],
+  [-0.190, 0.010],
+  [-0.192, -0.048],
+  [-0.182, -0.108],
+  [-0.158, -0.162],
+  [-0.118, -0.202],
+  [-0.062, -0.228],
+  [0, -0.238],
 ] as const;
-
-function traceOutline(points: ReadonlyArray<readonly [number, number]>, target: THREE.Shape | THREE.Path) {
-  const [fx, fy] = points[0]!;
-  target.moveTo(fx, fy);
-  for (let i = 1; i < points.length; i++) {
-    const [x, y] = points[i]!;
-    target.lineTo(x, y);
-  }
-}
 
 export function buildRgBodyShape(): THREE.Shape {
   const s = new THREE.Shape();
-  traceOutline(RG_BODY_OUTLINE, s);
+  const p = RG_BODY_OUTLINE;
+
+  s.moveTo(p[0]![0], p[0]![1]);
+
+  // Treble lower bout: smooth quadratic arcs instead of a jagged polyline
+  s.quadraticCurveTo(0.128, -0.218, p[3]![0], p[3]![1]);
+  s.quadraticCurveTo(0.198, -0.078, p[6]![0], p[6]![1]);
+  s.quadraticCurveTo(0.198, 0.038, p[9]![0], p[9]![1]);
+
+  // Cutaway scoop + horn on +X
+  s.quadraticCurveTo(0.108, 0.118, p[12]![0], p[12]![1]);
+  s.quadraticCurveTo(0.122, 0.192, p[15]![0], p[15]![1]);
+  s.quadraticCurveTo(0.078, 0.218, p[18]![0], p[18]![1]);
+  s.quadraticCurveTo(0.024, 0.158, p[21]![0], p[21]![1]);
+
+  // Bass (−X) from neck centre — mirrored treble proportions
+  s.quadraticCurveTo(-0.024, 0.158, p[24]![0], p[24]![1]);
+  s.quadraticCurveTo(-0.122, 0.192, p[27]![0], p[27]![1]);
+  s.quadraticCurveTo(-0.078, 0.218, p[30]![0], p[30]![1]);
+  s.quadraticCurveTo(-0.198, 0.038, p[33]![0], p[33]![1]);
+  s.quadraticCurveTo(-0.198, -0.078, p[36]![0], p[36]![1]);
+  s.quadraticCurveTo(-0.128, -0.218, p[39]![0], p[39]![1]);
+  s.quadraticCurveTo(-0.048, -0.238, p[42]![0], p[42]![1]);
+
   return s;
 }
 
@@ -117,7 +137,7 @@ export function getRgBindingSegments(): Array<{
 export function createRgBodyGeometry() {
   return new THREE.ExtrudeGeometry(buildRgBodyShape(), {
     bevelEnabled: false,
-    curveSegments: 1,
+    curveSegments: 20,
     depth: RG_BODY_DEPTH,
   });
 }
