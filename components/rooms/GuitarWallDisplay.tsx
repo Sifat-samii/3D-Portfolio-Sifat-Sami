@@ -1,6 +1,7 @@
 "use client";
 
 import { WallMountedGuitar, type GuitarFinish, type GuitarShape } from "@/components/rooms/WallMountedGuitar";
+import { WALL_GUITAR_SCALE, WALL_GUITAR_SCALE_LARGE } from "@/lib/guitarDisplayScale";
 import { scaleWorldZ } from "@/lib/roomLayout";
 
 const z = scaleWorldZ;
@@ -21,35 +22,13 @@ type WallGuitar = {
   scale?: number;
 };
 
-/** Seven guitars spaced across both wall segments (above & below door). */
+/** Five guitars spaced across both wall segments (above & below door). */
 const WALL_GUITARS: WallGuitar[] = [
-  // Upper segment (north of door)
-  {
-    shape: "rg",
-    z: -5.5,
-    finish: {
-      body: "#3a2414",
-      neck: "#241407",
-      fretboard: "#1c1009",
-    },
-  },
-  {
-    shape: "rhoads",
-    z: -4.0,
-    scale: 2.05,
-    finish: {
-      body: "#f0ece4",
-      bodyAccent: "#141210",
-      neck: "#141210",
-      fretboard: "#1c1009",
-      inlay: "#141210",
-    },
-  },
   // Lower segment (south of door)
   {
     shape: "deanMl",
     z: 0.0,
-    scale: 2.05,
+    scale: WALL_GUITAR_SCALE_LARGE,
     finish: {
       body: "#8a9098",
       bodyAccent: "#c41e1e",
@@ -71,7 +50,7 @@ const WALL_GUITARS: WallGuitar[] = [
   {
     shape: "rhoads",
     z: 2.6,
-    scale: 2.05,
+    scale: WALL_GUITAR_SCALE_LARGE,
     finish: {
       body: "#141210",
       neck: "#0a0a0a",
@@ -82,7 +61,7 @@ const WALL_GUITARS: WallGuitar[] = [
   {
     shape: "deanMl",
     z: 3.9,
-    scale: 2.05,
+    scale: WALL_GUITAR_SCALE_LARGE,
     finish: {
       body: "#141210",
       bodyAccent: "#c41e1e",
@@ -91,7 +70,6 @@ const WALL_GUITARS: WallGuitar[] = [
       inlay: "#c41e1e",
     },
   },
-  /* Ibanez RG (z 5.2) — moved to floor stand at the south-east corner */
 ];
 
 export function GuitarWallDisplay() {
@@ -117,7 +95,7 @@ export function GuitarWallDisplay() {
           wallX={WX}
           faceX={FACE_X}
           z={z(guitar.z)}
-          scale={guitar.scale ?? 2.0}
+          scale={guitar.scale ?? WALL_GUITAR_SCALE}
         />
       ))}
     </group>

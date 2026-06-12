@@ -18,24 +18,108 @@ const EXTRUDE = {
   curveSegments: 32,
 };
 
-export function createRgBodyGeometry() {
+/** RG body thickness — slim Iron Label slab. */
+export const RG_BODY_DEPTH = 0.032;
+
+/**
+ * Ibanez RG double-cutaway — right-handed front (+Z).
+ * Deep scooped cutaways, sharp horn tips; longer bass horn on −X.
+ */
+export const RG_BODY_OUTLINE: ReadonlyArray<readonly [number, number]> = [
+  [0, -0.236],
+  // Treble lower bout (+X)
+  [0.098, -0.220],
+  [0.148, -0.182],
+  [0.176, -0.122],
+  [0.182, -0.058],
+  [0.176, 0.002],
+  [0.162, 0.052],
+  [0.148, 0.082],
+  // Treble cutaway scoop (pulls inward before horn)
+  [0.132, 0.102],
+  [0.114, 0.112],
+  [0.096, 0.116],
+  // Treble horn — sharp tip
+  [0.078, 0.142],
+  [0.058, 0.168],
+  [0.038, 0.188],
+  [0.024, 0.194],
+  // Neck pocket
+  [0.014, 0.184],
+  [0.008, 0.162],
+  [0.004, 0.142],
+  [0, 0.132],
+  [-0.004, 0.142],
+  [-0.008, 0.162],
+  [-0.014, 0.184],
+  // Bass horn — longer, sharper
+  [-0.032, 0.206],
+  [-0.066, 0.236],
+  [-0.108, 0.262],
+  [-0.152, 0.278],
+  [-0.166, 0.262],
+  [-0.154, 0.232],
+  // Bass cutaway scoop
+  [-0.176, 0.178],
+  [-0.186, 0.122],
+  [-0.188, 0.062],
+  [-0.184, 0.002],
+  [-0.174, -0.068],
+  [-0.156, -0.134],
+  [-0.124, -0.188],
+  [-0.074, -0.224],
+  [0, -0.236],
+] as const;
+
+function traceOutline(points: ReadonlyArray<readonly [number, number]>, target: THREE.Shape | THREE.Path) {
+  const [fx, fy] = points[0]!;
+  target.moveTo(fx, fy);
+  for (let i = 1; i < points.length; i++) {
+    const [x, y] = points[i]!;
+    target.lineTo(x, y);
+  }
+}
+
+export function buildRgBodyShape(): THREE.Shape {
   const s = new THREE.Shape();
-  s.moveTo(0.0, -0.228);
-  s.bezierCurveTo(0.095, -0.226, 0.152, -0.175, 0.164, -0.095);
-  s.bezierCurveTo(0.170, -0.035, 0.148, 0.015, 0.136, 0.058);
-  s.bezierCurveTo(0.126, 0.098, 0.116, 0.135, 0.112, 0.182);
-  s.lineTo(0.097, 0.172);
-  s.bezierCurveTo(0.083, 0.118, 0.058, 0.102, 0.037, 0.102);
-  s.lineTo(0.030, 0.188);
-  s.lineTo(-0.030, 0.188);
-  s.lineTo(-0.039, 0.102);
-  s.bezierCurveTo(-0.064, 0.103, -0.094, 0.124, -0.107, 0.186);
-  s.lineTo(-0.127, 0.234);
-  s.lineTo(-0.139, 0.212);
-  s.bezierCurveTo(-0.153, 0.128, -0.163, 0.048, -0.168, -0.022);
-  s.bezierCurveTo(-0.172, -0.105, -0.138, -0.192, -0.083, -0.216);
-  s.bezierCurveTo(-0.048, -0.228, -0.018, -0.228, 0.0, -0.228);
-  return new THREE.ExtrudeGeometry(s, { ...EXTRUDE, depth: 0.042 });
+  traceOutline(RG_BODY_OUTLINE, s);
+  return s;
+}
+
+/** Perimeter binding segments — edge-only, avoids solid-fill hole artifacts. */
+export function getRgBindingSegments(): Array<{
+  pos: [number, number, number];
+  size: [number, number, number];
+  rotZ: number;
+}> {
+  const z = 0.0012;
+  const segs: Array<{ pos: [number, number, number]; size: [number, number, number]; rotZ: number }> = [];
+  for (let i = 0; i < RG_BODY_OUTLINE.length - 1; i++) {
+    const [x0, y0] = RG_BODY_OUTLINE[i]!;
+    const [x1, y1] = RG_BODY_OUTLINE[i + 1]!;
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const len = Math.hypot(dx, dy);
+    if (len < 0.004) continue;
+    segs.push({
+      pos: [(x0 + x1) / 2, (y0 + y1) / 2, z],
+      size: [len + 0.001, 0.0032, 0.0016],
+      rotZ: Math.atan2(dy, dx),
+    });
+  }
+  return segs;
+}
+
+/**
+ * Ibanez RG (RGIR20BFE) — flat-top Superstrat, no bevel (stays angular).
+ * Front face at local Z = 0 when positioned with z = −RG_BODY_DEPTH.
+ */
+export function createRgBodyGeometry() {
+  return new THREE.ExtrudeGeometry(buildRgBodyShape(), {
+    bevelEnabled: false,
+    curveSegments: 1,
+    depth: RG_BODY_DEPTH,
+  });
 }
 
 /** Jackson Randy Rhoads — offset asymmetrical flying V */
@@ -89,10 +173,14 @@ export function createDeanMlBodyGeometry() {
 export function createIbanezHeadGeometry() {
   const s = new THREE.Shape();
   s.moveTo(-0.022, 0);
-  s.bezierCurveTo(-0.030, 0.035, -0.034, 0.085, -0.027, 0.130);
-  s.lineTo(-0.016, 0.158);
-  s.lineTo(0.030, 0.172);
-  s.bezierCurveTo(0.026, 0.115, 0.022, 0.055, 0.021, 0.0);
+  s.lineTo(-0.028, 0.042);
+  s.lineTo(-0.030, 0.092);
+  s.lineTo(-0.022, 0.138);
+  s.lineTo(-0.012, 0.162);
+  s.lineTo(0.032, 0.176);
+  s.lineTo(0.028, 0.118);
+  s.lineTo(0.024, 0.058);
+  s.lineTo(0.022, 0);
   s.lineTo(-0.022, 0);
   return new THREE.ExtrudeGeometry(s, {
     depth: 0.014,
@@ -166,16 +254,35 @@ export function createFretboardGeometry() {
 
 export function createNeckGeometry() {
   const s = new THREE.Shape();
-  s.moveTo(-0.026, 0.16);
-  s.lineTo(-0.020, NUT_Y);
-  s.lineTo(0.020, NUT_Y);
-  s.lineTo(0.026, 0.16);
-  s.lineTo(-0.026, 0.16);
+  s.moveTo(-0.029, 0.146);
+  s.lineTo(-0.021, NUT_Y);
+  s.lineTo(0.021, NUT_Y);
+  s.lineTo(0.029, 0.146);
+  s.lineTo(-0.029, 0.146);
   return new THREE.ExtrudeGeometry(s, {
-    depth: 0.016,
+    depth: 0.014,
     bevelEnabled: true,
-    bevelThickness: 0.004,
-    bevelSize: 0.004,
-    bevelSegments: 3,
+    bevelThickness: 0.002,
+    bevelSize: 0.002,
+    bevelSegments: 2,
+  });
+}
+
+/** AANJ heel scoop — bolt-on all-access neck joint (RG Iron Label). */
+export function createRgHeelScoopGeometry() {
+  const s = new THREE.Shape();
+  s.moveTo(-0.034, 0);
+  s.lineTo(-0.034, 0.028);
+  s.lineTo(-0.018, 0.038);
+  s.lineTo(0.018, 0.038);
+  s.lineTo(0.034, 0.028);
+  s.lineTo(0.034, 0);
+  s.lineTo(-0.034, 0);
+  return new THREE.ExtrudeGeometry(s, {
+    depth: 0.014,
+    bevelEnabled: true,
+    bevelThickness: 0.002,
+    bevelSize: 0.0015,
+    bevelSegments: 2,
   });
 }

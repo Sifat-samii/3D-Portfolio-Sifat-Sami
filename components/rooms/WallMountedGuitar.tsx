@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { IbanezRgir20Bfe } from "@/components/rooms/IbanezRgir20Bfe";
+import { WALL_GUITAR_SCALE } from "@/lib/guitarDisplayScale";
 import {
   BRIDGE_Y,
   FRETS,
@@ -71,7 +73,7 @@ export function WallMountedGuitar({
   faceX,
   z,
   bodyY = 1.9,
-  scale = 2.0,
+  scale = WALL_GUITAR_SCALE,
 }: WallMountedGuitarProps) {
   const bodyGeom = useMemo(() => bodyGeometryFor(shape), [shape]);
   const headGeom = useMemo(() => headGeometryFor(shape), [shape]);
@@ -102,6 +104,18 @@ export function WallMountedGuitar({
 
       {/* Guitar — faces west into the music room */}
       <group position={[faceX, bodyY, z]} rotation={[0, -Math.PI / 2, 0]} scale={[scale, scale, scale]}>
+        {shape === "rg" ? (
+          <IbanezRgir20Bfe
+            finish={{
+              body: finish.body,
+              neck: finish.neck,
+              fretboard: finish.fretboard,
+              inlay: finish.inlay,
+            }}
+            showInlays={Boolean(finish.inlay)}
+          />
+        ) : (
+          <>
         <mesh geometry={bodyGeom} position={[0, 0, bodyDepth]}>
           <meshStandardMaterial color={finish.body} roughness={0.82} metalness={0.04} />
         </mesh>
@@ -111,15 +125,6 @@ export function WallMountedGuitar({
               <mesh key={`accent-${i}`} position={[ox, -0.04, 0.002]}>
                 <boxGeometry args={[0.012, 0.28, 0.002]} />
                 <meshStandardMaterial color={finish.bodyAccent} roughness={0.75} metalness={0.08} />
-              </mesh>
-            ))
-          : null}
-
-        {shape === "rg"
-          ? [-0.105, -0.055, 0.012, 0.068, 0.118].map((ox, i) => (
-              <mesh key={`grain-${i}`} position={[ox, -0.035, 0.0015]}>
-                <boxGeometry args={[0.008 + (i % 2) * 0.005, 0.34, 0.0015]} />
-                <meshStandardMaterial color={finish.neck} roughness={0.88} metalness={0.01} />
               </mesh>
             ))
           : null}
@@ -206,6 +211,8 @@ export function WallMountedGuitar({
             />
           </mesh>
         ))}
+          </>
+        )}
       </group>
 
       {/* Spotlight */}

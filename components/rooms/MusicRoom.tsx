@@ -10,7 +10,6 @@ import { DEPTH_SCALE, scaleDepth, scaleWorldZ } from "@/lib/roomLayout";
 import { MusicPosterWall } from "@/components/rooms/MusicPosterWall";
 import { GuitarWallDisplay } from "@/components/rooms/GuitarWallDisplay";
 import { GuitarWallAmpStacks } from "@/components/rooms/GuitarWallAmpStacks";
-import { FloorGuitarStand } from "@/components/rooms/FloorGuitarStand";
 import { MediaWall } from "@/components/rooms/MediaWall";
 import { NorthWallBandPosters } from "@/components/rooms/NorthWallBandPosters";
 import { PedalDisplayRack } from "@/components/rooms/PedalDisplayRack";
@@ -95,7 +94,6 @@ export function MusicRoom() {
       ))}
 
       <GuitarWallDisplay />
-      <FloorGuitarStand />
       <GuitarWallAmpStacks />
       <MediaWall />
       <NorthWallBandPosters />

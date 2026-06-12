@@ -22,6 +22,8 @@
  * (plane local +Z normal → world +X after the yaw).
  */
 
+import { IbanezRgir20Bfe, WALNUT_FLAT_FINISH } from "@/components/rooms/IbanezRgir20Bfe";
+import { MarshallMg15Front } from "@/components/rooms/MarshallMg15Front";
 import { scaleWorldZ } from "@/lib/roomLayout";
 
 const S = 1.6;                      // global display scale
@@ -41,6 +43,17 @@ const CREAM     = "#e6e0d6";        // monitor cabinet white
 const GLASS     = "#020407";        // screen glass
 const LEATHER   = "#16130f";        // chair leather
 const FABRIC    = "#1d1a17";        // chair fabric / mesh
+
+/** Guitar-corner floor gear — extra offset from the desk (+X east, −Z north). */
+const GUITAR_CORNER_AWAY_X = 0.12;
+const GUITAR_CORNER_AWAY_Z = -0.32;
+const GUITAR_CORNER_YAW = Math.PI + (50 * Math.PI) / 180 + Math.PI / 2;
+/** Electric guitar yaw only — 5° clockwise (viewed from above). */
+const ELECTRIC_GUITAR_YAW = -(5 * Math.PI) / 180;
+/** Lean forward on the stand — +5° (opposite of back-lean). */
+const ELECTRIC_GUITAR_LEAN = (5 * Math.PI) / 180;
+/** Extra space between the electric guitar stand and the amp (+Z / south). */
+const GUITAR_AMP_GAP_Z = 0.24;
 
 export function StudioDesk() {
   return (
@@ -808,8 +821,11 @@ export function StudioDesk() {
           11. GUITAR CORNER — electric + acoustic stands, amp, pedals
          ═══════════════════════════════════════════════════════════ */}
 
-      {/* ── Electric guitar on A-frame stand (north end) ── */}
-      <group position={[0.30, 0, -1.62]} rotation={[0, 0.5, 0]}>
+      {/* ── Electric guitar on A-frame stand (north end) — 5° clockwise ── */}
+      <group
+        position={[0.30 + GUITAR_CORNER_AWAY_X, 0, -1.62 + GUITAR_CORNER_AWAY_Z + GUITAR_AMP_GAP_Z]}
+        rotation={[0, ELECTRIC_GUITAR_YAW, 0]}
+      >
         {/* A-frame legs */}
         {[-0.09, 0.09].map((lz) => (
           <mesh key={`afl-${lz}`} position={[0.02, 0.21, lz]} rotation={[lz < 0 ? 0.28 : -0.28, 0, 0.18]}>
@@ -829,44 +845,11 @@ export function StudioDesk() {
             <meshStandardMaterial color="#141210" roughness={0.85} metalness={0.10} />
           </mesh>
         ))}
-        {/* Guitar — leaning back slightly on the stand */}
-        <group position={[0.05, 0, 0]} rotation={[0, 0, -0.16]}>
-          {/* Body (superstrat) */}
-          <mesh position={[0.02, 0.26, 0]}>
-            <boxGeometry args={[0.075, 0.34, 0.27]} />
-            <meshStandardMaterial color="#2c1c0e" roughness={0.78} metalness={0.04} />
-          </mesh>
-          {/* Horns */}
-          <mesh position={[0.02, 0.44, -0.09]} rotation={[0.45, 0, 0]}>
-            <boxGeometry args={[0.070, 0.16, 0.08]} />
-            <meshStandardMaterial color="#2c1c0e" roughness={0.78} metalness={0.04} />
-          </mesh>
-          <mesh position={[0.02, 0.42, 0.10]} rotation={[-0.35, 0, 0]}>
-            <boxGeometry args={[0.070, 0.12, 0.08]} />
-            <meshStandardMaterial color="#2c1c0e" roughness={0.78} metalness={0.04} />
-          </mesh>
-          {/* Pickups */}
-          {[0.20, 0.30].map((py, i) => (
-            <mesh key={`pu-${i}`} position={[0.060, py, 0]}>
-              <boxGeometry args={[0.012, 0.040, 0.085]} />
-              <meshStandardMaterial color="#080808" roughness={0.50} metalness={0.12} />
-            </mesh>
-          ))}
-          {/* Neck */}
-          <mesh position={[0.02, 0.70, 0]}>
-            <boxGeometry args={[0.045, 0.58, 0.058]} />
-            <meshStandardMaterial color="#190f06" roughness={0.80} metalness={0.03} />
-          </mesh>
-          {/* Headstock */}
-          <mesh position={[0.02, 1.04, -0.012]} rotation={[0.12, 0, 0]}>
-            <boxGeometry args={[0.040, 0.15, 0.075]} />
-            <meshStandardMaterial color="#120b04" roughness={0.80} metalness={0.04} />
-          </mesh>
-          {/* Strings hint */}
-          <mesh position={[0.063, 0.58, 0]}>
-            <boxGeometry args={[0.0015, 0.78, 0.035]} />
-            <meshStandardMaterial color="#a8a090" metalness={0.80} roughness={0.20} />
-          </mesh>
+        {/* Ibanez RGIR20BFE — mesh front is +Z; rotate +90° Y so EMG face points +X into room */}
+        <group position={[0.05, 0.33, 0]} rotation={[0, 0, ELECTRIC_GUITAR_LEAN]}>
+          <group rotation={[0, Math.PI / 2, 0]} scale={[1.05, 1.05, 1.05]}>
+            <IbanezRgir20Bfe finish={WALNUT_FLAT_FINISH} />
+          </group>
         </group>
       </group>
 
@@ -928,40 +911,17 @@ export function StudioDesk() {
         </group>
       </group>
 
-      {/* ── Guitar amplifier (combo, north of electric stand) ── */}
-      <group position={[0.55, 0, -2.30]} rotation={[0, 0.35, 0]}>
-        {/* Cab */}
+      {/* ── Guitar amplifier (combo, north of electric stand) — 320° yaw ── */}
+      <group
+        position={[0.55 + GUITAR_CORNER_AWAY_X, 0, -2.30 + GUITAR_CORNER_AWAY_Z]}
+        rotation={[0, GUITAR_CORNER_YAW, 0]}
+      >
+        {/* Cab shell — Marshall MG15FX front on +X face */}
         <mesh position={[0, 0.30, 0]}>
           <boxGeometry args={[0.42, 0.56, 0.60]} />
-          <meshStandardMaterial color="#100d0a" roughness={0.72} metalness={0.06} />
+          <meshStandardMaterial color="#100d0a" roughness={0.78} metalness={0.05} />
         </mesh>
-        {/* Front grille cloth */}
-        <mesh position={[0.213, 0.24, 0]}>
-          <boxGeometry args={[0.010, 0.38, 0.54]} />
-          <meshStandardMaterial color="#1e1a14" roughness={0.92} metalness={0.02} />
-        </mesh>
-        {/* Speaker shadow circle */}
-        <mesh position={[0.220, 0.24, 0]} rotation={[0, Math.PI / 2, 0]}>
-          <circleGeometry args={[0.155, 24]} />
-          <meshStandardMaterial color="#0a0806" roughness={0.95} metalness={0.0} />
-        </mesh>
-        {/* Control panel */}
-        <mesh position={[0.205, 0.50, 0]}>
-          <boxGeometry args={[0.030, 0.075, 0.52]} />
-          <meshStandardMaterial color="#2a2218" metalness={0.30} roughness={0.50} />
-        </mesh>
-        {/* Knob row */}
-        {Array.from({ length: 6 }, (_, i) => (
-          <mesh key={`ak-${i}`} position={[0.225, 0.50, -0.19 + i * 0.076]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.014, 0.014, 0.014, 12]} />
-            <meshStandardMaterial color="#d8cdb8" metalness={0.30} roughness={0.45} />
-          </mesh>
-        ))}
-        {/* Power lamp */}
-        <mesh position={[0.224, 0.50, 0.235]}>
-          <boxGeometry args={[0.008, 0.014, 0.014]} />
-          <meshStandardMaterial color="#070707" emissive="#ef3030" emissiveIntensity={2.4} roughness={0.3} />
-        </mesh>
+        <MarshallMg15Front frontX={0.21} cabY={0.30} faceH={0.56} faceW={0.54} />
         {/* Top handle */}
         <mesh position={[0, 0.60, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.075, 0.012, 8, 16, Math.PI]} />
@@ -976,8 +936,11 @@ export function StudioDesk() {
         ))}
       </group>
 
-      {/* ── Pedalboard (floor, in front of electric stand) ── */}
-      <group position={[0.85, 0, -1.30]} rotation={[0, 0.15, 0]}>
+      {/* ── Pedalboard (floor, in front of electric stand) — 320° yaw ── */}
+      <group
+        position={[0.85 + GUITAR_CORNER_AWAY_X, 0, -1.30 + GUITAR_CORNER_AWAY_Z]}
+        rotation={[0, GUITAR_CORNER_YAW, 0]}
+      >
         {/* Board (slight tilt) */}
         <mesh position={[0, 0.045, 0]} rotation={[0, 0, 0.10]}>
           <boxGeometry args={[0.30, 0.035, 0.55]} />
