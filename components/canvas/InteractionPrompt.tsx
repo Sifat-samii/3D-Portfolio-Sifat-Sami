@@ -41,9 +41,13 @@ export function InteractionPrompt() {
               transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
               className="grid h-7 min-w-7 place-items-center rounded-md border border-white/20 bg-white/[0.08] px-2 font-mono text-[11px] font-semibold"
               style={{ color: accent, borderColor: `${accent}66` }}
+              aria-hidden="true"
             >
               E
             </motion.kbd>
+            <span className="sr-only">
+              Press E to {verb.toLowerCase()} {label}
+            </span>
             <span className="text-white/85">
               {verb}{" "}
               <span className="font-semibold text-white" style={{ color: accent }}>

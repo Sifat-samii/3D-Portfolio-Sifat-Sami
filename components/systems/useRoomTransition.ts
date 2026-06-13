@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import type { Group } from "three";
+import { beginDoorPassImmunity, triggerDoorPairOpen } from "@/lib/doorMotion";
 import type { DoorConfig } from "@/types/portfolio";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
 
@@ -34,6 +35,8 @@ export function useRoomTransition(playerRef: RefObject<Group | null>) {
       setTransitioning(true);
       setNearbyDoor(null);
       setNearbyObject(null);
+      triggerDoorPairOpen(door);
+      beginDoorPassImmunity();
       player.position.set(...door.targetPosition);
       setCurrentRoom(door.toRoom);
 

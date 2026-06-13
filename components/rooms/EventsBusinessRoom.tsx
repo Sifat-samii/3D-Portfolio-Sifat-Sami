@@ -24,13 +24,15 @@ const decor = (x: number, y: number, lz: number): [number, number, number] => [
   scaleWorldZ(DECOR_GZ + lz),
 ];
 
+const EVENTS_WALL_HEIGHT = 4;
+
 export function EventsBusinessRoom() {
   const room = roomById.events;
 
   return (
     <RoomShell
       room={room}
-      wallHeight={4}
+      wallHeight={EVENTS_WALL_HEIGHT}
       openings={[{ side: "south", offset: -1, width: 2.4 }]}
     >
       <FurnitureBox position={decor(5, 0.25, -14.4)} scale={[5.8, 0.5, 1.2]} color="#3b0a3a" emissive="#ff4fd8" />
@@ -60,7 +62,7 @@ export function EventsBusinessRoom() {
       <RoomLights roomId={room.id} position={room.position} />
       <RoomAtmosphere room={room} count={28} speed={0.45} size={2.6} />
       {room.doors.map((door) => (
-        <Door key={door.id} door={door} />
+        <Door key={door.id} door={door} wallHeight={EVENTS_WALL_HEIGHT} />
       ))}
       {room.objects.map((object) => (
         <InteractiveObject key={object.id} object={object} />

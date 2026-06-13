@@ -1,19 +1,51 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { AcademicsOverlay } from "@/components/overlays/AcademicsOverlay";
-import { ContactOverlay } from "@/components/overlays/ContactOverlay";
-import { CreativeOverlay } from "@/components/overlays/CreativeOverlay";
-import { EventsOverlay } from "@/components/overlays/EventsOverlay";
-import { MusicOverlay } from "@/components/overlays/MusicOverlay";
-import { MusicTvMenuOverlay } from "@/components/overlays/MusicTvMenuOverlay";
-import { ProfessionalOverlay } from "@/components/overlays/ProfessionalOverlay";
-import { ResumeOverlay } from "@/components/overlays/ResumeOverlay";
-import { WebProjectsOverlay } from "@/components/overlays/WebProjectsOverlay";
-import { WelcomeOverlay } from "@/components/overlays/WelcomeOverlay";
 import { useInputState } from "@/components/systems/useInputState";
 import { usePortfolioStore } from "@/store/usePortfolioStore";
+
+const WelcomeOverlay = dynamic(
+  () => import("@/components/overlays/WelcomeOverlay").then((module) => ({ default: module.WelcomeOverlay })),
+  { loading: () => null },
+);
+const ContactOverlay = dynamic(
+  () => import("@/components/overlays/ContactOverlay").then((module) => ({ default: module.ContactOverlay })),
+  { loading: () => null },
+);
+const ResumeOverlay = dynamic(
+  () => import("@/components/overlays/ResumeOverlay").then((module) => ({ default: module.ResumeOverlay })),
+  { loading: () => null },
+);
+const MusicTvMenuOverlay = dynamic(
+  () => import("@/components/overlays/MusicTvMenuOverlay").then((module) => ({ default: module.MusicTvMenuOverlay })),
+  { loading: () => null },
+);
+const MusicOverlay = dynamic(
+  () => import("@/components/overlays/MusicOverlay").then((module) => ({ default: module.MusicOverlay })),
+  { loading: () => null },
+);
+const WebProjectsOverlay = dynamic(
+  () => import("@/components/overlays/WebProjectsOverlay").then((module) => ({ default: module.WebProjectsOverlay })),
+  { loading: () => null },
+);
+const CreativeOverlay = dynamic(
+  () => import("@/components/overlays/CreativeOverlay").then((module) => ({ default: module.CreativeOverlay })),
+  { loading: () => null },
+);
+const EventsOverlay = dynamic(
+  () => import("@/components/overlays/EventsOverlay").then((module) => ({ default: module.EventsOverlay })),
+  { loading: () => null },
+);
+const AcademicsOverlay = dynamic(
+  () => import("@/components/overlays/AcademicsOverlay").then((module) => ({ default: module.AcademicsOverlay })),
+  { loading: () => null },
+);
+const ProfessionalOverlay = dynamic(
+  () => import("@/components/overlays/ProfessionalOverlay").then((module) => ({ default: module.ProfessionalOverlay })),
+  { loading: () => null },
+);
 
 const musicOverlays = new Set([
   "musicProfile",

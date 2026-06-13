@@ -53,7 +53,8 @@ export function InputProvider({ children }: { children: ReactNode }) {
 
       const intent = movementKeys[key];
       if (intent) {
-        if (usePortfolioStore.getState().isOverlayOpen) return;
+        const { isOverlayOpen, isTransitioning } = usePortfolioStore.getState();
+        if (isOverlayOpen || isTransitioning) return;
         event.preventDefault();
         setInput((state) => ({ ...state, [intent]: true }));
       }
@@ -85,6 +86,17 @@ export function InputProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("blur", resetMovement);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
+  }, []);
+
+  useEffect(() => {
+    return usePortfolioStore.subscribe((state, previousState) => {
+      const overlayOpened = state.isOverlayOpen && !previousState.isOverlayOpen;
+      const transitionStarted = state.isTransitioning && !previousState.isTransitioning;
+
+      if (overlayOpened || transitionStarted) {
+        setInput((current) => ({ ...current, ...resetMovementFlags() }));
+      }
+    });
   }, []);
 
   return <InputContext.Provider value={input}>{children}</InputContext.Provider>;

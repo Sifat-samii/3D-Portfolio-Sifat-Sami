@@ -21,13 +21,15 @@ import { scaleWorldZ, Z_PIVOT_SOUTH } from "@/lib/roomLayout";
 
 const z = scaleWorldZ;
 
+const LIVING_WALL_HEIGHT = 3.8;
+
 export function LivingRoom() {
   const room = roomById.living;
 
   return (
     <RoomShell
       room={room}
-      wallHeight={3.8}
+      wallHeight={LIVING_WALL_HEIGHT}
       showFrontWall
       openings={[
         { side: "west", offset: -7.8, width: 2.4 }, // → Academics (upper)
@@ -174,7 +176,7 @@ export function LivingRoom() {
       <RoomAtmosphere room={room} count={26} speed={0.32} size={2.6} />
       <RoomLabel label={room.label} position={[0, 0.16, z(4.2)]} color={room.accentColor} />
       {room.doors.map((door) => (
-        <Door key={door.id} door={door} />
+        <Door key={door.id} door={door} wallHeight={LIVING_WALL_HEIGHT} />
       ))}
       {room.objects.map((object) => (
         <InteractiveObject key={object.id} object={object} />

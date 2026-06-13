@@ -7,19 +7,22 @@ import { usePortfolioStore } from "@/store/usePortfolioStore";
 const MAP_SIZE = 196;
 const PADDING = 22;
 
+const xs = rooms.map((room) => room.position[0]);
+const zs = rooms.map((room) => room.position[2]);
+const MAP_BOUNDS = {
+  minX: Math.min(...xs),
+  maxX: Math.max(...xs),
+  minZ: Math.min(...zs),
+  maxZ: Math.max(...zs),
+  rangeX: Math.max(1, Math.max(...xs) - Math.min(...xs)),
+  rangeZ: Math.max(1, Math.max(...zs) - Math.min(...zs)),
+};
+
 function projectRoom(positionX: number, positionZ: number) {
-  const xs = rooms.map((r) => r.position[0]);
-  const zs = rooms.map((r) => r.position[2]);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minZ = Math.min(...zs);
-  const maxZ = Math.max(...zs);
-  const rangeX = Math.max(1, maxX - minX);
-  const rangeZ = Math.max(1, maxZ - minZ);
   const usable = MAP_SIZE - PADDING * 2;
   return {
-    x: PADDING + ((positionX - minX) / rangeX) * usable,
-    y: PADDING + ((positionZ - minZ) / rangeZ) * usable,
+    x: PADDING + ((positionX - MAP_BOUNDS.minX) / MAP_BOUNDS.rangeX) * usable,
+    y: PADDING + ((positionZ - MAP_BOUNDS.minZ) / MAP_BOUNDS.rangeZ) * usable,
   };
 }
 

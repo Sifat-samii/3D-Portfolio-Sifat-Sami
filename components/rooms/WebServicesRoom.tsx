@@ -18,6 +18,7 @@ import { roomById } from "@/lib/roomConfig";
 import { scaleWorldZ } from "@/lib/roomLayout";
 
 const z = scaleWorldZ;
+const WEB_WALL_HEIGHT = 3.8;
 
 export function WebServicesRoom() {
   const room = roomById.web;
@@ -25,7 +26,7 @@ export function WebServicesRoom() {
   return (
     <RoomShell
       room={room}
-      wallHeight={3.8}
+      wallHeight={WEB_WALL_HEIGHT}
       openings={[{ side: "west", offset: -2.6, width: 2.4 }]}
     >
       {/* Decor shifted +2.5 in x to recenter on the widened room (center x = 14.5) */}
@@ -60,7 +61,7 @@ export function WebServicesRoom() {
       <RoomLights roomId={room.id} position={room.position} />
       <RoomAtmosphere room={room} count={24} speed={0.45} size={2.2} />
       {room.doors.map((door) => (
-        <Door key={door.id} door={door} />
+        <Door key={door.id} door={door} wallHeight={WEB_WALL_HEIGHT} />
       ))}
       {room.objects.map((object) => (
         <InteractiveObject key={object.id} object={object} />

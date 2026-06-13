@@ -9,6 +9,7 @@ import { MusicPosterWall } from "@/components/rooms/MusicPosterWall";
 import { GuitarWallDisplay } from "@/components/rooms/GuitarWallDisplay";
 import { GuitarWallAmpStacks } from "@/components/rooms/GuitarWallAmpStacks";
 import { MediaWall } from "@/components/rooms/MediaWall";
+import { EastWallExecutedSoulsPoster } from "@/components/rooms/EastWallExecutedSoulsPoster";
 import { NorthWallBandPosters } from "@/components/rooms/NorthWallBandPosters";
 import { PedalDisplayRack } from "@/components/rooms/PedalDisplayRack";
 import { StudioDesk } from "@/components/rooms/StudioDesk";
@@ -35,6 +36,7 @@ const PLANK_SEAMS = [0.42, 0.84, 1.26, 1.68, 2.10, 2.52, 2.94, 3.36, 3.78];
 
 const EAST_SEG1_DEPTH = 2.8 * DEPTH_SCALE;
 const EAST_SEG2_DEPTH = 6.8 * DEPTH_SCALE;
+const MUSIC_WALL_HEIGHT = 4;
 
 export function MusicRoom() {
   const room = roomById.music;
@@ -42,7 +44,7 @@ export function MusicRoom() {
   return (
     <RoomShell
       room={room}
-      wallHeight={4}
+      wallHeight={MUSIC_WALL_HEIGHT}
       openings={[{ side: "east", offset: -2.6, width: 2.4 }]}
     >
       {/* ── NORTH WALL — dark reclaimed wood (15 m wide) ─────── */}
@@ -95,6 +97,7 @@ export function MusicRoom() {
 
       <GuitarWallDisplay />
       <GuitarWallAmpStacks />
+      <EastWallExecutedSoulsPoster />
       <MediaWall />
       <NorthWallBandPosters />
       <PedalDisplayRack />
@@ -159,7 +162,7 @@ export function MusicRoom() {
       <MusicRoomLinearLights />
 
       {room.doors.map((door) => (
-        <Door key={door.id} door={door} />
+        <Door key={door.id} door={door} wallHeight={MUSIC_WALL_HEIGHT} />
       ))}
       {room.objects
         .filter((object) => !object.proximityOnly)

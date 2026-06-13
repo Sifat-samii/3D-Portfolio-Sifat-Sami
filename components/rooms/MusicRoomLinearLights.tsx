@@ -130,6 +130,10 @@ export function MusicRoomLinearLights() {
   }, []);
 
   useFrame((_, delta) => {
+    if (!isActive) {
+      return;
+    }
+
     const damping = 1 - Math.pow(0.0025, delta);
     for (let i = 0; i < STRIPS.length; i++) {
       const light = lightRefs.current[i];
@@ -138,6 +142,10 @@ export function MusicRoomLinearLights() {
       light.intensity = MathUtils.lerp(light.intensity, target, damping);
     }
   });
+
+  if (!isActive) {
+    return null;
+  }
 
   return (
     <group>

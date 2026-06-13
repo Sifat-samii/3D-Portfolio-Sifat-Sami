@@ -27,6 +27,7 @@ const decor = (lx: number, y: number, lz: number): [number, number, number] => [
 ];
 
 const z = scaleWorldZ;
+const ACADEMICS_WALL_HEIGHT = 3.8;
 
 export function AcademicsRoom() {
   const room = roomById.academics;
@@ -34,7 +35,7 @@ export function AcademicsRoom() {
   return (
     <RoomShell
       room={room}
-      wallHeight={3.8}
+      wallHeight={ACADEMICS_WALL_HEIGHT}
       openings={[{ side: "east", offset: 0, width: 2.4 }]}
     >
       <FurnitureBox position={decor(-2, 1.1, 12.7)} scale={[1.2, 2.2, 0.8]} color="#14532d" />
@@ -72,7 +73,7 @@ export function AcademicsRoom() {
       <RoomLights roomId={room.id} position={room.position} />
       <RoomAtmosphere room={room} count={20} speed={0.22} size={2.2} />
       {room.doors.map((door) => (
-        <Door key={door.id} door={door} />
+        <Door key={door.id} door={door} wallHeight={ACADEMICS_WALL_HEIGHT} />
       ))}
       {room.objects.map((object) => (
         <InteractiveObject key={object.id} object={object} />

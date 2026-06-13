@@ -27,6 +27,10 @@ export function RoomLights({ roomId, position }: RoomLightsProps) {
   const targetFill = isActive ? preset.activeIntensity * 0.25 : 0;
 
   useFrame((_, delta) => {
+    if (!isActive) {
+      return;
+    }
+
     const damping = 1 - Math.pow(0.0025, delta);
     if (keyRef.current) {
       keyRef.current.intensity = MathUtils.lerp(keyRef.current.intensity, targetKey, damping);

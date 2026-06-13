@@ -12,8 +12,7 @@ type InteractiveObjectProps = {
 };
 
 export function InteractiveObject({ object }: InteractiveObjectProps) {
-  const nearbyObject = usePortfolioStore((state) => state.nearbyObject);
-  const isNearby = nearbyObject === object.id;
+  const isNearby = usePortfolioStore((state) => state.nearbyObject === object.id);
   const accent = object.accentColor ?? "#38bdf8";
 
   const groupRef = useRef<Group>(null);

@@ -7,11 +7,16 @@ import { MobilePortfolio } from "@/components/fallback/MobilePortfolio";
 import { OverlayManager } from "@/components/overlays/OverlayManager";
 import { MiniMap } from "@/components/shared/MiniMap";
 import { RoomEntryToast } from "@/components/shared/RoomEntryToast";
+import { LoadingScreen } from "@/components/shared/LoadingScreen";
 import { InputProvider } from "@/components/systems/InputProvider";
 import { useViewportMode } from "@/components/systems/useViewportMode";
 
 function PortfolioExperience() {
-  const { show3D, showMobileLayout, isWebGLFallback } = useViewportMode();
+  const { show3D, showMobileLayout, isWebGLFallback, isReady } = useViewportMode();
+
+  if (!isReady) {
+    return <LoadingScreen />;
+  }
 
   return (
     <>
@@ -31,14 +36,14 @@ function PortfolioExperience() {
           <InteractionPrompt />
         </>
       ) : null}
-      <OverlayManager />
-      <div className="sr-only md:block">
+      {show3D ? <OverlayManager /> : null}
+      <main id="portfolio-content" tabIndex={-1} className="sr-only">
         <h1>Sifat Mahmud interactive 3D portfolio</h1>
         <p>
           Explore rooms for music, software projects, creative work, events, academics, professional experience, and
           contact information.
         </p>
-      </div>
+      </main>
     </>
   );
 }

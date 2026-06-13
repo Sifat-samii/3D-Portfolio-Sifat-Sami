@@ -25,13 +25,15 @@ const decor = (lx: number, y: number, lz: number): [number, number, number] => [
   scaleWorldZ(DECOR_GZ + lz),
 ];
 
+const PROFESSIONAL_WALL_HEIGHT = 3.8;
+
 export function ProfessionalRoom() {
   const room = roomById.professional;
 
   return (
     <RoomShell
       room={room}
-      wallHeight={3.8}
+      wallHeight={PROFESSIONAL_WALL_HEIGHT}
       openings={[{ side: "west", offset: 0, width: 2.4 }]}
     >
       <FurnitureBox position={decor(5, 0.5, 9.5)} scale={[3.2, 0.75, 1.3]} color="#0b1224" />
@@ -76,7 +78,7 @@ export function ProfessionalRoom() {
       <RoomLights roomId={room.id} position={room.position} />
       <RoomAtmosphere room={room} count={20} speed={0.28} size={2.2} />
       {room.doors.map((door) => (
-        <Door key={door.id} door={door} />
+        <Door key={door.id} door={door} wallHeight={PROFESSIONAL_WALL_HEIGHT} />
       ))}
       {room.objects.map((object) => (
         <InteractiveObject key={object.id} object={object} />

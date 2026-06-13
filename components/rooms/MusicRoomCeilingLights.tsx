@@ -130,6 +130,11 @@ function CeilingDownlight({ spec }: { spec: LightSpec }) {
 }
 
 export function MusicRoomCeilingLights() {
+  const isActive = usePortfolioStore((state) => state.currentRoom === "music");
+  if (!isActive) {
+    return null;
+  }
+
   return (
     <group>
       {LIGHTS.map((spec) => (

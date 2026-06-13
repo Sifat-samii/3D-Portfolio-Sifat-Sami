@@ -10,7 +10,12 @@ export function RoomEntryToast() {
   const currentRoom = usePortfolioStore((state) => state.currentRoom);
 
   return (
-    <div className="pointer-events-none fixed left-1/2 top-20 z-30 hidden -translate-x-1/2 md:block">
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className="pointer-events-none fixed left-1/2 top-20 z-30 hidden -translate-x-1/2 md:block"
+    >
       <ToastBanner key={currentRoom} roomId={currentRoom} />
     </div>
   );

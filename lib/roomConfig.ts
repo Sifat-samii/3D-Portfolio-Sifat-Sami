@@ -32,7 +32,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "music",
         position: worldPos(-7, 1.4, -2),
         rotation: [0, Math.PI / 2, 0],
-        targetPosition: worldPos(-8.5, 0.7, -2),
+        targetPosition: worldPos(-9.6, 0.7, -2),
         accentColor: "#ff3d6e",
       },
       {
@@ -42,7 +42,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "web",
         position: worldPos(7, 1.4, -2),
         rotation: [0, -Math.PI / 2, 0],
-        targetPosition: worldPos(9, 0.7, -2),
+        targetPosition: worldPos(9.6, 0.7, -2),
         accentColor: "#34d5ff",
       },
       {
@@ -52,7 +52,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "academics",
         position: worldPos(-7, 1.4, -11),
         rotation: [0, Math.PI / 2, 0],
-        targetPosition: worldPos(-9, 0.7, -11),
+        targetPosition: worldPos(-9.6, 0.7, -11),
         accentColor: "#86efac",
       },
       {
@@ -62,7 +62,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "professional",
         position: worldPos(7, 1.4, -11),
         rotation: [0, -Math.PI / 2, 0],
-        targetPosition: worldPos(9, 0.7, -11),
+        targetPosition: worldPos(9.6, 0.7, -11),
         accentColor: "#38bdf8",
       },
       {
@@ -71,7 +71,7 @@ export const rooms: RoomConfig[] = [
         fromRoom: "living",
         toRoom: "creative",
         position: worldPos(-4, 1.4, -16),
-        targetPosition: worldPos(-4, 0.7, -18.5),
+        targetPosition: worldPos(-4, 0.7, -18.6),
         accentColor: "#fb923c",
       },
       {
@@ -80,7 +80,7 @@ export const rooms: RoomConfig[] = [
         fromRoom: "living",
         toRoom: "events",
         position: worldPos(4, 1.4, -16),
-        targetPosition: worldPos(4, 0.7, -18.5),
+        targetPosition: worldPos(4, 0.7, -18.6),
         accentColor: "#facc15",
       },
     ],
@@ -125,7 +125,7 @@ export const rooms: RoomConfig[] = [
     trimColor: "#c49a24",
     accentColor: "#ffd060",
     lightingPreset: "musicStage",
-    entryPoint: worldPos(-8.5, 0.7, -2),
+    entryPoint: worldPos(-9.6, 0.7, -2),
     cameraOffset: [0, 9.0, 12.0],
     doors: [
       {
@@ -135,7 +135,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "living",
         position: worldPos(-7, 1.4, -2),
         rotation: [0, -Math.PI / 2, 0],
-        targetPosition: worldPos(-5.5, 0.7, -2),
+        targetPosition: worldPos(-4.4, 0.7, -2),
         accentColor: "#ffb84d",
       },
     ],
@@ -162,7 +162,7 @@ export const rooms: RoomConfig[] = [
     trimColor: "#34d5ff",
     accentColor: "#22d3ee",
     lightingPreset: "webDigital",
-    entryPoint: worldPos(9, 0.7, -2),
+    entryPoint: worldPos(9.6, 0.7, -2),
     cameraOffset: [0, 9, 12.5],
     doors: [
       {
@@ -172,7 +172,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "living",
         position: worldPos(7, 1.4, -2),
         rotation: [0, Math.PI / 2, 0],
-        targetPosition: worldPos(5.5, 0.7, -2),
+        targetPosition: worldPos(4.4, 0.7, -2),
         accentColor: "#ffb84d",
       },
     ],
@@ -226,7 +226,7 @@ export const rooms: RoomConfig[] = [
     trimColor: "#fb923c",
     accentColor: "#ffd166",
     lightingPreset: "creativeWarm",
-    entryPoint: worldPos(-4, 0.7, -18.5),
+    entryPoint: worldPos(-4, 0.7, -18.6),
     cameraOffset: [0, 8, 10.2],
     doors: [
       {
@@ -236,7 +236,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "living",
         position: worldPos(-4, 1.4, -16),
         rotation: [0, Math.PI, 0],
-        targetPosition: worldPos(-4, 0.7, -14.5),
+        targetPosition: worldPos(-4, 0.7, -13.4),
         accentColor: "#ffb84d",
       },
     ],
@@ -281,7 +281,7 @@ export const rooms: RoomConfig[] = [
     trimColor: "#ff4fd8",
     accentColor: "#facc15",
     lightingPreset: "eventsGold",
-    entryPoint: worldPos(4, 0.7, -18.5),
+    entryPoint: worldPos(4, 0.7, -18.6),
     cameraOffset: [0, 7.6, 9.6],
     doors: [
       {
@@ -291,7 +291,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "living",
         position: worldPos(4, 1.4, -16),
         rotation: [0, Math.PI, 0],
-        targetPosition: worldPos(4, 0.7, -14.5),
+        targetPosition: worldPos(4, 0.7, -13.4),
         accentColor: "#ffb84d",
       },
     ],
@@ -345,7 +345,7 @@ export const rooms: RoomConfig[] = [
     trimColor: "#86efac",
     accentColor: "#bbf7d0",
     lightingPreset: "academicsLibrary",
-    entryPoint: worldPos(-9, 0.7, -11),
+    entryPoint: worldPos(-9.6, 0.7, -11),
     cameraOffset: [0, 9, 12],
     doors: [
       {
@@ -355,7 +355,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "living",
         position: worldPos(-7, 1.4, -11),
         rotation: [0, -Math.PI / 2, 0],
-        targetPosition: worldPos(-5.5, 0.7, -11),
+        targetPosition: worldPos(-4.4, 0.7, -11),
         accentColor: "#ffb84d",
       },
     ],
@@ -400,7 +400,7 @@ export const rooms: RoomConfig[] = [
     trimColor: "#38bdf8",
     accentColor: "#93c5fd",
     lightingPreset: "professionalNavy",
-    entryPoint: worldPos(9, 0.7, -11),
+    entryPoint: worldPos(9.6, 0.7, -11),
     cameraOffset: [0, 9, 12],
     doors: [
       {
@@ -410,7 +410,7 @@ export const rooms: RoomConfig[] = [
         toRoom: "living",
         position: worldPos(7, 1.4, -11),
         rotation: [0, Math.PI / 2, 0],
-        targetPosition: worldPos(5.5, 0.7, -11),
+        targetPosition: worldPos(4.4, 0.7, -11),
         accentColor: "#ffb84d",
       },
     ],
