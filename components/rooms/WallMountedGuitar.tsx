@@ -134,7 +134,7 @@ export function WallMountedGuitar({
           : null}
 
         {shape === "deanMl" ? (
-          <mesh position={[0, -0.12, bodyDepth - 0.008]}>
+          <mesh position={[0, -0.10, bodyDepth - 0.008]}>
             <boxGeometry args={[0.018, 0.10, 0.028]} />
             <meshStandardMaterial
               color={finish.bodyAccent ?? "#8a1010"}

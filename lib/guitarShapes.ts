@@ -10,103 +10,115 @@ export const dotY = (n: number) => (fretY(n - 1) + fretY(n)) / 2;
 export const SINGLE_DOTS = [3, 5, 7, 9, 15, 17, 19, 21].map(dotY);
 export const fbWidth = (y: number) => 0.06 - (0.06 - 0.044) * ((y - 0.15) / (NUT_Y + 0.01 - 0.15));
 
-const EXTRUDE = {
+/** V-body extrude — lighter edge bevel keeps wings sharp but smooths the outline. */
+const V_EXTRUDE = {
   bevelEnabled: true,
-  bevelThickness: 0.007,
-  bevelSize: 0.006,
-  bevelSegments: 3,
-  curveSegments: 32,
+  bevelThickness: 0.005,
+  bevelSize: 0.004,
+  bevelSegments: 2,
+  curveSegments: 28,
 };
 
 /** RG body thickness — slim Iron Label slab. */
 export const RG_BODY_DEPTH = 0.032;
 
 /**
- * Ibanez RG double-cutaway — right-handed front (+Z).
- * +X = treble (player's right); −X = bass. Sides are nearly mirrored;
- * bass horn extends only slightly further than treble (authentic but balanced).
+ * Ibanez RGIR20BFE body anchors — traced from product reference (front +Z).
+ * +X treble, −X bass. Long sharp horns, deep cutaway scoops, full lower bout.
  */
 export const RG_BODY_OUTLINE: ReadonlyArray<readonly [number, number]> = [
-  [0, -0.238],
-  // Treble lower bout (+X)
-  [0.062, -0.228],
-  [0.118, -0.202],
-  [0.158, -0.162],
-  [0.182, -0.108],
-  [0.192, -0.048],
-  [0.190, 0.010],
-  [0.178, 0.060],
-  [0.160, 0.096],
-  [0.142, 0.112],
-  // Treble cutaway scoop
-  [0.122, 0.122],
-  [0.100, 0.126],
-  [0.088, 0.120],
-  // Treble upper horn
-  [0.092, 0.148],
-  [0.110, 0.178],
-  [0.118, 0.202],
-  [0.112, 0.214],
-  [0.094, 0.210],
-  [0.068, 0.192],
-  [0.040, 0.172],
-  [0.016, 0.154],
-  [0, 0.142],
-  // Bass side (−X) — pulled in to match treble proportions
-  [-0.016, 0.154],
-  [-0.040, 0.172],
-  [-0.068, 0.192],
-  [-0.094, 0.210],
-  [-0.112, 0.214],
-  [-0.118, 0.202],
-  [-0.110, 0.178],
-  [-0.092, 0.148],
-  // Bass cutaway scoop
-  [-0.088, 0.120],
-  [-0.100, 0.126],
-  [-0.122, 0.122],
-  [-0.142, 0.112],
-  [-0.160, 0.096],
-  [-0.178, 0.060],
-  [-0.190, 0.010],
-  [-0.192, -0.048],
-  [-0.182, -0.108],
-  [-0.158, -0.162],
-  [-0.118, -0.202],
-  [-0.062, -0.228],
-  [0, -0.238],
+  [0, -0.244],
+  [0.102, -0.234],
+  [0.174, -0.192],
+  [0.206, -0.128],
+  [0.212, -0.052],
+  [0.202, 0.022],
+  [0.178, 0.072],
+  [0.148, 0.108],
+  [0.112, 0.124],
+  [0.086, 0.114],
+  [0.078, 0.096],
+  [0.094, 0.138],
+  [0.108, 0.184],
+  [0.110, 0.212],
+  [0.092, 0.214],
+  [0.048, 0.198],
+  [0, 0.148],
+  [-0.048, 0.202],
+  [-0.100, 0.218],
+  [-0.114, 0.214],
+  [-0.104, 0.184],
+  [-0.088, 0.138],
+  [-0.076, 0.096],
+  [-0.086, 0.114],
+  [-0.112, 0.124],
+  [-0.148, 0.108],
+  [-0.178, 0.072],
+  [-0.202, 0.022],
+  [-0.212, -0.052],
+  [-0.206, -0.128],
+  [-0.174, -0.192],
+  [-0.102, -0.234],
+  [0, -0.244],
 ] as const;
+
+const RG_SHAPE_CENTROID: readonly [number, number] = [0, -0.048];
 
 export function buildRgBodyShape(): THREE.Shape {
   const s = new THREE.Shape();
-  const p = RG_BODY_OUTLINE;
 
-  s.moveTo(p[0]![0], p[0]![1]);
+  s.moveTo(0, -0.244);
 
-  // Treble lower bout: smooth quadratic arcs instead of a jagged polyline
-  s.quadraticCurveTo(0.128, -0.218, p[3]![0], p[3]![1]);
-  s.quadraticCurveTo(0.198, -0.078, p[6]![0], p[6]![1]);
-  s.quadraticCurveTo(0.198, 0.038, p[9]![0], p[9]![1]);
+  // Treble lower bout — full belly, slightly offset waist
+  s.bezierCurveTo(0.112, -0.238, 0.202, -0.196, 0.208, -0.112);
+  s.bezierCurveTo(0.214, -0.038, 0.202, 0.038, 0.176, 0.086);
 
-  // Cutaway scoop + horn on +X
-  s.quadraticCurveTo(0.108, 0.118, p[12]![0], p[12]![1]);
-  s.quadraticCurveTo(0.122, 0.192, p[15]![0], p[15]![1]);
-  s.quadraticCurveTo(0.078, 0.218, p[18]![0], p[18]![1]);
-  s.quadraticCurveTo(0.024, 0.158, p[21]![0], p[21]![1]);
+  // Treble cutaway — deep AANJ scoop
+  s.bezierCurveTo(0.148, 0.114, 0.114, 0.126, 0.090, 0.114);
+  s.bezierCurveTo(0.076, 0.098, 0.090, 0.142, 0.106, 0.188);
 
-  // Bass (−X) from neck centre — mirrored treble proportions
-  s.quadraticCurveTo(-0.024, 0.158, p[24]![0], p[24]![1]);
-  s.quadraticCurveTo(-0.122, 0.192, p[27]![0], p[27]![1]);
-  s.quadraticCurveTo(-0.078, 0.218, p[30]![0], p[30]![1]);
-  s.quadraticCurveTo(-0.198, 0.038, p[33]![0], p[33]![1]);
-  s.quadraticCurveTo(-0.198, -0.078, p[36]![0], p[36]![1]);
-  s.quadraticCurveTo(-0.128, -0.218, p[39]![0], p[39]![1]);
-  s.quadraticCurveTo(-0.048, -0.238, p[42]![0], p[42]![1]);
+  // Treble horn — long Iron Label tip
+  s.bezierCurveTo(0.114, 0.212, 0.102, 0.216, 0.086, 0.212);
+  s.quadraticCurveTo(0.042, 0.198, 0, 0.148);
+
+  // Bass horn — longer asymmetric tip
+  s.quadraticCurveTo(-0.046, 0.206, -0.102, 0.218);
+  s.bezierCurveTo(-0.116, 0.216, -0.108, 0.190, -0.094, 0.168);
+  s.bezierCurveTo(-0.080, 0.132, -0.070, 0.094, -0.082, 0.112);
+  s.bezierCurveTo(-0.104, 0.126, -0.140, 0.116, -0.172, 0.090);
+  s.bezierCurveTo(-0.202, 0.042, -0.214, -0.034, -0.208, -0.108);
+  s.bezierCurveTo(-0.202, -0.196, -0.112, -0.238, 0, -0.244);
 
   return s;
 }
 
-/** Perimeter binding segments — edge-only, avoids solid-fill hole artifacts. */
+function buildRgBodyShapeInset(inset: number): THREE.Shape {
+  const [cx, cy] = RG_SHAPE_CENTROID;
+  const source = buildRgBodyShape().getPoints(72);
+  const s = new THREE.Shape();
+
+  source.forEach((pt, i) => {
+    const x = cx + (pt.x - cx) * inset;
+    const y = cy + (pt.y - cy) * inset;
+    if (i === 0) s.moveTo(x, y);
+    else s.lineTo(x, y);
+  });
+
+  return s;
+}
+
+/** Cream binding ring — continuous extruded strip (no spike artifacts). */
+export function createRgBindingGeometry() {
+  const outer = buildRgBodyShape();
+  outer.holes.push(buildRgBodyShapeInset(0.988));
+  return new THREE.ExtrudeGeometry(outer, {
+    depth: 0.0022,
+    bevelEnabled: false,
+    curveSegments: 28,
+  });
+}
+
+/** @deprecated Use createRgBindingGeometry — kept for outline sampling only. */
 export function getRgBindingSegments(): Array<{
   pos: [number, number, number];
   size: [number, number, number];
@@ -137,97 +149,134 @@ export function getRgBindingSegments(): Array<{
 export function createRgBodyGeometry() {
   return new THREE.ExtrudeGeometry(buildRgBodyShape(), {
     bevelEnabled: false,
-    curveSegments: 20,
+    curveSegments: 28,
     depth: RG_BODY_DEPTH,
   });
 }
 
+/**
+ * Jackson Randy Rhoads — offset asymmetrical V.
+ * Signature upward bass horn, long bass wing, shorter treble wing.
+ */
+function buildRhoadsBodyShape(): THREE.Shape {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0.058);
+
+  // Bass shoulder → upward horn bulge
+  s.bezierCurveTo(-0.014, 0.058, -0.032, 0.060, -0.052, 0.056);
+  s.bezierCurveTo(-0.082, 0.072, -0.108, 0.142, -0.132, 0.192);
+  s.bezierCurveTo(-0.152, 0.218, -0.168, 0.198, -0.156, 0.168);
+  s.bezierCurveTo(-0.122, 0.122, -0.092, 0.094, -0.072, 0.078);
+  s.bezierCurveTo(-0.082, 0.042, -0.092, 0.008, -0.086, -0.022);
+
+  // Bass lower wing — dramatic down-left sweep
+  s.bezierCurveTo(-0.132, -0.118, -0.194, -0.228, -0.238, -0.312);
+  s.bezierCurveTo(-0.248, -0.338, -0.222, -0.332, -0.202, -0.302);
+  s.bezierCurveTo(-0.148, -0.228, -0.092, -0.158, -0.054, -0.112);
+  s.bezierCurveTo(-0.028, -0.082, -0.010, -0.062, 0, -0.066);
+
+  // Treble lower wing — shorter, down-right
+  s.bezierCurveTo(0.062, -0.132, 0.122, -0.212, 0.166, -0.262);
+  s.bezierCurveTo(0.186, -0.282, 0.176, -0.258, 0.156, -0.228);
+  s.bezierCurveTo(0.114, -0.158, 0.078, -0.092, 0.056, -0.042);
+  s.bezierCurveTo(0.046, 0.008, 0.050, 0.062, 0.036, 0.080);
+  s.bezierCurveTo(0.020, 0.070, 0.010, 0.062, 0, 0.058);
+
+  return s;
+}
+
+/** Gibson-style symmetric Flying V — equal swept wings. */
+function buildFlyingVBodyShape(): THREE.Shape {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0.100);
+
+  // Bass wing
+  s.bezierCurveTo(-0.022, 0.100, -0.042, 0.096, -0.056, 0.084);
+  s.bezierCurveTo(-0.102, 0.042, -0.152, -0.038, -0.212, -0.162);
+  s.bezierCurveTo(-0.236, -0.252, -0.246, -0.312, -0.242, -0.336);
+  s.bezierCurveTo(-0.232, -0.346, -0.202, -0.324, -0.176, -0.284);
+  s.bezierCurveTo(-0.132, -0.224, -0.086, -0.172, -0.050, -0.142);
+  s.bezierCurveTo(-0.024, -0.116, -0.008, -0.102, 0, -0.096);
+
+  // Treble wing — mirror
+  s.bezierCurveTo(0.008, -0.102, 0.024, -0.116, 0.050, -0.142);
+  s.bezierCurveTo(0.086, -0.172, 0.132, -0.224, 0.176, -0.284);
+  s.bezierCurveTo(0.202, -0.324, 0.232, -0.346, 0.242, -0.336);
+  s.bezierCurveTo(0.246, -0.312, 0.236, -0.252, 0.212, -0.162);
+  s.bezierCurveTo(0.152, -0.038, 0.102, 0.042, 0.056, 0.084);
+  s.bezierCurveTo(0.042, 0.096, 0.022, 0.100, 0, 0.100);
+
+  return s;
+}
+
+/** Dean ML Razorback — tall bass horn, center tail spike, offset treble wing. */
+function buildDeanMlBodyShape(): THREE.Shape {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0.080);
+
+  // Bass shoulder → tall left horn
+  s.bezierCurveTo(-0.016, 0.080, -0.034, 0.076, -0.052, 0.068);
+  s.bezierCurveTo(-0.096, 0.132, -0.142, 0.242, -0.166, 0.272);
+  s.bezierCurveTo(-0.182, 0.286, -0.196, 0.262, -0.182, 0.232);
+  s.bezierCurveTo(-0.142, 0.162, -0.102, 0.096, -0.076, 0.066);
+  s.bezierCurveTo(-0.092, 0.030, -0.102, -0.006, -0.096, -0.036);
+
+  // Bass lower wing
+  s.bezierCurveTo(-0.172, -0.132, -0.252, -0.212, -0.302, -0.252);
+  s.bezierCurveTo(-0.316, -0.262, -0.302, -0.242, -0.276, -0.212);
+  s.bezierCurveTo(-0.206, -0.152, -0.132, -0.082, -0.066, -0.042);
+  s.bezierCurveTo(-0.040, -0.026, -0.020, -0.052, 0, -0.082);
+
+  // Center tail spike
+  s.bezierCurveTo(0.020, -0.118, 0.042, -0.156, 0.066, -0.176);
+  s.bezierCurveTo(0.082, -0.186, 0.072, -0.168, 0.056, -0.144);
+
+  // Treble lower wing
+  s.bezierCurveTo(0.112, -0.186, 0.172, -0.216, 0.202, -0.226);
+  s.bezierCurveTo(0.216, -0.216, 0.206, -0.196, 0.182, -0.170);
+  s.bezierCurveTo(0.132, -0.116, 0.096, -0.064, 0.076, -0.022);
+
+  // Treble upper horn
+  s.bezierCurveTo(0.106, 0.062, 0.142, 0.172, 0.172, 0.232);
+  s.bezierCurveTo(0.186, 0.252, 0.172, 0.242, 0.146, 0.212);
+  s.bezierCurveTo(0.102, 0.152, 0.066, 0.096, 0.046, 0.076);
+  s.bezierCurveTo(0.030, 0.080, 0.014, 0.080, 0, 0.080);
+
+  return s;
+}
+
 /** Jackson Randy Rhoads — offset asymmetrical flying V */
 export function createRhoadsBodyGeometry() {
-  const s = new THREE.Shape();
-  s.moveTo(0, 0.06);
-  s.lineTo(-0.026, 0.06);
-  s.lineTo(-0.11, 0.20);
-  s.lineTo(-0.17, 0.16);
-  s.lineTo(-0.09, 0.09);
-  s.lineTo(-0.11, 0.0);
-  s.lineTo(-0.24, -0.30);
-  s.lineTo(-0.19, -0.34);
-  s.lineTo(-0.07, -0.12);
-  s.lineTo(0, -0.14);
-  s.lineTo(0.15, -0.24);
-  s.lineTo(0.19, -0.19);
-  s.lineTo(0.09, -0.05);
-  s.lineTo(0.07, 0.09);
-  s.lineTo(0.026, 0.06);
-  s.lineTo(0, 0.06);
-  return new THREE.ExtrudeGeometry(s, { ...EXTRUDE, depth: 0.038 });
+  return new THREE.ExtrudeGeometry(buildRhoadsBodyShape(), { ...V_EXTRUDE, depth: 0.038 });
 }
 
 /** Gibson-style symmetric Flying V — classic V wings. */
 export function createFlyingVBodyGeometry() {
-  const s = new THREE.Shape();
-  s.moveTo(0, 0.10);
-  s.lineTo(-0.038, 0.10);
-  s.lineTo(-0.16, -0.04);
-  s.lineTo(-0.24, -0.30);
-  s.lineTo(-0.14, -0.34);
-  s.lineTo(-0.05, -0.15);
-  s.lineTo(0, -0.13);
-  s.lineTo(0.05, -0.15);
-  s.lineTo(0.14, -0.34);
-  s.lineTo(0.24, -0.30);
-  s.lineTo(0.16, -0.04);
-  s.lineTo(0.038, 0.10);
-  s.lineTo(0, 0.10);
-  return new THREE.ExtrudeGeometry(s, { ...EXTRUDE, depth: 0.036 });
+  return new THREE.ExtrudeGeometry(buildFlyingVBodyShape(), { ...V_EXTRUDE, depth: 0.036 });
 }
 
 /** Dean ML Razorback — sharp offset wings + center tail spike */
 export function createDeanMlBodyGeometry() {
-  const s = new THREE.Shape();
-  s.moveTo(0, 0.08);
-  s.lineTo(-0.028, 0.08);
-  s.lineTo(-0.15, 0.28);
-  s.lineTo(-0.22, 0.22);
-  s.lineTo(-0.11, 0.07);
-  s.lineTo(-0.13, -0.02);
-  s.lineTo(-0.28, -0.24);
-  s.lineTo(-0.32, -0.19);
-  s.lineTo(-0.15, -0.03);
-  s.lineTo(-0.05, -0.10);
-  s.lineTo(0, -0.16);
-  s.lineTo(0.05, -0.10);
-  s.lineTo(0.17, -0.20);
-  s.lineTo(0.21, -0.15);
-  s.lineTo(0.11, 0.01);
-  s.lineTo(0.13, 0.15);
-  s.lineTo(0.19, 0.24);
-  s.lineTo(0.08, 0.07);
-  s.lineTo(0.028, 0.08);
-  s.lineTo(0, 0.08);
-  return new THREE.ExtrudeGeometry(s, { ...EXTRUDE, depth: 0.040 });
+  return new THREE.ExtrudeGeometry(buildDeanMlBodyShape(), { ...V_EXTRUDE, depth: 0.040 });
 }
 
 export function createIbanezHeadGeometry() {
   const s = new THREE.Shape();
-  s.moveTo(-0.022, 0);
-  s.lineTo(-0.028, 0.042);
-  s.lineTo(-0.030, 0.092);
-  s.lineTo(-0.022, 0.138);
-  s.lineTo(-0.012, 0.162);
-  s.lineTo(0.032, 0.176);
-  s.lineTo(0.028, 0.118);
-  s.lineTo(0.024, 0.058);
-  s.lineTo(0.022, 0);
-  s.lineTo(-0.022, 0);
+  s.moveTo(-0.024, 0);
+  s.bezierCurveTo(-0.030, 0.028, -0.034, 0.058, -0.038, 0.092);
+  s.quadraticCurveTo(-0.040, 0.128, -0.034, 0.158);
+  s.quadraticCurveTo(-0.022, 0.178, 0.006, 0.186);
+  s.quadraticCurveTo(0.042, 0.182, 0.046, 0.152);
+  s.bezierCurveTo(0.048, 0.118, 0.042, 0.072, 0.038, 0.038);
+  s.quadraticCurveTo(0.032, 0.018, 0.026, 0);
+  s.lineTo(-0.024, 0);
   return new THREE.ExtrudeGeometry(s, {
-    depth: 0.014,
+    depth: 0.015,
     bevelEnabled: true,
-    bevelThickness: 0.002,
+    bevelThickness: 0.0025,
     bevelSize: 0.002,
     bevelSegments: 2,
-    curveSegments: 16,
+    curveSegments: 24,
   });
 }
 
@@ -235,12 +284,10 @@ export function createIbanezHeadGeometry() {
 export function createJacksonHeadGeometry() {
   const s = new THREE.Shape();
   s.moveTo(-0.020, 0);
-  s.lineTo(-0.024, 0.06);
-  s.lineTo(-0.018, 0.12);
-  s.lineTo(0.032, 0.178);
-  s.lineTo(0.038, 0.150);
-  s.lineTo(0.022, 0.055);
-  s.lineTo(0.020, 0);
+  s.bezierCurveTo(-0.024, 0.032, -0.022, 0.072, -0.016, 0.112);
+  s.bezierCurveTo(-0.008, 0.146, 0.014, 0.172, 0.040, 0.184);
+  s.lineTo(0.044, 0.158);
+  s.bezierCurveTo(0.034, 0.102, 0.026, 0.056, 0.020, 0);
   s.lineTo(-0.020, 0);
   return new THREE.ExtrudeGeometry(s, {
     depth: 0.014,
@@ -248,7 +295,7 @@ export function createJacksonHeadGeometry() {
     bevelThickness: 0.002,
     bevelSize: 0.002,
     bevelSegments: 2,
-    curveSegments: 12,
+    curveSegments: 20,
   });
 }
 
@@ -256,12 +303,10 @@ export function createJacksonHeadGeometry() {
 export function createDeanHeadGeometry() {
   const s = new THREE.Shape();
   s.moveTo(-0.022, 0);
-  s.lineTo(-0.028, 0.05);
-  s.lineTo(-0.020, 0.11);
-  s.lineTo(0.0, 0.168);
-  s.lineTo(0.020, 0.11);
-  s.lineTo(0.028, 0.05);
-  s.lineTo(0.022, 0);
+  s.bezierCurveTo(-0.028, 0.034, -0.026, 0.082, -0.018, 0.122);
+  s.quadraticCurveTo(-0.008, 0.156, 0, 0.174);
+  s.quadraticCurveTo(0.008, 0.156, 0.018, 0.122);
+  s.bezierCurveTo(0.026, 0.082, 0.028, 0.034, 0.022, 0);
   s.lineTo(-0.022, 0);
   return new THREE.ExtrudeGeometry(s, {
     depth: 0.014,
@@ -269,7 +314,7 @@ export function createDeanHeadGeometry() {
     bevelThickness: 0.002,
     bevelSize: 0.002,
     bevelSegments: 2,
-    curveSegments: 12,
+    curveSegments: 20,
   });
 }
 
@@ -293,35 +338,36 @@ export function createFretboardGeometry() {
 
 export function createNeckGeometry() {
   const s = new THREE.Shape();
-  s.moveTo(-0.029, 0.146);
-  s.lineTo(-0.021, NUT_Y);
+  s.moveTo(-0.030, 0.146);
+  s.quadraticCurveTo(-0.026, 0.42, -0.021, NUT_Y);
   s.lineTo(0.021, NUT_Y);
-  s.lineTo(0.029, 0.146);
-  s.lineTo(-0.029, 0.146);
+  s.quadraticCurveTo(0.026, 0.42, 0.030, 0.146);
+  s.lineTo(-0.030, 0.146);
   return new THREE.ExtrudeGeometry(s, {
-    depth: 0.014,
+    depth: 0.015,
     bevelEnabled: true,
-    bevelThickness: 0.002,
+    bevelThickness: 0.0025,
     bevelSize: 0.002,
     bevelSegments: 2,
+    curveSegments: 12,
   });
 }
 
 /** AANJ heel scoop — bolt-on all-access neck joint (RG Iron Label). */
 export function createRgHeelScoopGeometry() {
   const s = new THREE.Shape();
-  s.moveTo(-0.034, 0);
-  s.lineTo(-0.034, 0.028);
-  s.lineTo(-0.018, 0.038);
-  s.lineTo(0.018, 0.038);
-  s.lineTo(0.034, 0.028);
-  s.lineTo(0.034, 0);
-  s.lineTo(-0.034, 0);
+  s.moveTo(-0.038, 0);
+  s.quadraticCurveTo(-0.040, 0.016, -0.034, 0.028);
+  s.quadraticCurveTo(-0.022, 0.042, 0, 0.046);
+  s.quadraticCurveTo(0.022, 0.042, 0.034, 0.028);
+  s.quadraticCurveTo(0.040, 0.016, 0.038, 0);
+  s.lineTo(-0.038, 0);
   return new THREE.ExtrudeGeometry(s, {
-    depth: 0.014,
+    depth: 0.015,
     bevelEnabled: true,
     bevelThickness: 0.002,
     bevelSize: 0.0015,
     bevelSegments: 2,
+    curveSegments: 16,
   });
 }

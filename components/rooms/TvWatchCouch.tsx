@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * Unified curved sectional — single low arc sofa facing the north-wall TV (−Z).
+ * Premium curved sectional — low floating profile, bouclé upholstery,
+ * channel back, brushed bronze base. Faces the north-wall TV (−Z).
  */
 
 import { RoundedBox } from "@react-three/drei";
-import { createMarbleTexture, createWoolTexture } from "@/lib/sofaTextures";
+import { createBoucleTexture, createMarbleTexture } from "@/lib/sofaTextures";
 import { scaleWorldZ } from "@/lib/roomLayout";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
@@ -17,40 +18,47 @@ const SOFA_SCALE = 1.20;
 const SOFA_HEIGHT_SCALE = 1.08;
 const CENTER_FORWARD = 0.04;
 
-/** Modern oatmeal linen — cool neutral upholstery. */
-const WOOL = "#c8c0b0";
-const PIPING = "#8a8278";
-const LEG_METAL = "#a8a4a0";
-/** Analogous warm tones that complement the sofa. */
-const RUG = "#e0d4c2";
+const BOUCLE = "#a8a094";
+const PIPING = "#6e6860";
+const STITCH = "#8a8278";
+const BASE_WOOD = "#2a2420";
+const BRONZE = "#9a8468";
+const RUG = "#ddd0bc";
+const ACCENT_PILLOW = "#5c4030";
 
-const trimMat = new THREE.MeshStandardMaterial({
-  color: "#9a9088",
-  metalness: 0.82,
-  roughness: 0.22,
+const bronzeMat = new THREE.MeshStandardMaterial({
+  color: BRONZE,
+  metalness: 0.86,
+  roughness: 0.28,
 });
 
-const legMat = new THREE.MeshStandardMaterial({
-  color: LEG_METAL,
-  metalness: 0.88,
-  roughness: 0.18,
+const baseMat = new THREE.MeshStandardMaterial({
+  color: BASE_WOOD,
+  metalness: 0.12,
+  roughness: 0.72,
+});
+
+const stitchMat = new THREE.MeshStandardMaterial({
+  color: STITCH,
+  roughness: 0.82,
+  metalness: 0,
 });
 
 function useSofaMaterials() {
-  const map = useMemo(() => createWoolTexture(WOOL), []);
+  const map = useMemo(() => createBoucleTexture(BOUCLE), []);
 
   useEffect(() => () => map.dispose(), [map]);
 
-  const wool = useMemo(
+  const fabric = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
         map,
-        color: "#f6f2ea",
+        color: "#ddd6ca",
         roughness: 0.9,
         metalness: 0,
-        sheen: 0.85,
-        sheenRoughness: 0.35,
-        sheenColor: new THREE.Color("#ebe4d8"),
+        sheen: 0.92,
+        sheenRoughness: 0.38,
+        sheenColor: new THREE.Color("#f0ebe2"),
       }),
     [map],
   );
@@ -59,13 +67,26 @@ function useSofaMaterials() {
     () =>
       new THREE.MeshStandardMaterial({
         color: PIPING,
-        roughness: 0.55,
-        metalness: 0.01,
+        roughness: 0.48,
+        metalness: 0.04,
       }),
     [],
   );
 
-  return { wool, piping };
+  const accent = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: ACCENT_PILLOW,
+        roughness: 0.92,
+        metalness: 0,
+        sheen: 0.55,
+        sheenRoughness: 0.5,
+        sheenColor: new THREE.Color("#7a5848"),
+      }),
+    [],
+  );
+
+  return { fabric, piping, accent };
 }
 
 function useTableMaterials() {
@@ -122,7 +143,7 @@ function useTableMaterials() {
   return { top, apron, brass, base };
 }
 
-type WoolBoxProps = {
+type FabricBoxProps = {
   args: [number, number, number];
   position?: [number, number, number];
   rotation?: [number, number, number];
@@ -130,12 +151,19 @@ type WoolBoxProps = {
   material: THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial;
 };
 
-function WoolBox({ args, position = [0, 0, 0], rotation = [0, 0, 0], radius = 0.08, material }: WoolBoxProps) {
+function FabricBox({
+  args,
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  radius = 0.08,
+  material,
+}: FabricBoxProps) {
+  const maxR = Math.min(args[0], args[1], args[2]) * 0.38;
   return (
     <RoundedBox
       args={args}
-      radius={radius}
-      smoothness={18}
+      radius={Math.min(radius, maxR)}
+      smoothness={SMOOTH}
       position={position}
       rotation={rotation}
       material={material}
@@ -145,7 +173,6 @@ function WoolBox({ args, position = [0, 0, 0], rotation = [0, 0, 0], radius = 0.
   );
 }
 
-/** Soft cord trim — rounded profile instead of flat strips. */
 function PipingCord({
   width,
   position,
@@ -159,9 +186,9 @@ function PipingCord({
 }) {
   return (
     <RoundedBox
-      args={[width, 0.012, 0.012]}
-      radius={0.006}
-      smoothness={12}
+      args={[width, 0.008, 0.008]}
+      radius={0.004}
+      smoothness={16}
       position={position}
       rotation={rotation}
       material={material}
@@ -170,15 +197,51 @@ function PipingCord({
   );
 }
 
-/** Segment overlap so adjacent pieces read as one continuous sofa. */
-const SEG_W = 1.04;
-const SEG_D = 1.1;
-const SEAT_W = 0.94;
-const SEAT_D = 0.96;
+/** Soft vertical channel lines — rounded, low profile. */
+function SoftChannels({
+  width,
+  height,
+  depth,
+  count,
+  position,
+  rotation = [0, 0, 0],
+}: {
+  width: number;
+  height: number;
+  depth: number;
+  count: number;
+  position: [number, number, number];
+  rotation?: [number, number, number];
+}) {
+  const spacing = width / (count + 1);
+  return (
+    <group position={position} rotation={rotation}>
+      {Array.from({ length: count }, (_, i) => {
+        const x = -width / 2 + spacing * (i + 1);
+        return (
+          <RoundedBox
+            key={i}
+            args={[0.003, height * 0.88, 0.002]}
+            radius={0.0012}
+            smoothness={10}
+            position={[x, 0, depth / 2 + 0.001]}
+            material={stitchMat}
+          />
+        );
+      })}
+    </group>
+  );
+}
+
+const SMOOTH = 28;
+const SEG_W = 1.06;
+const SEG_D = 1.08;
+const SEAT_W = 0.96;
+const SEAT_D = 0.98;
+const SEG_OVERLAP = 0.06;
 
 type ArcPose = { x: number; z: number; ry: number };
 
-/** Toward the north-wall TV (−Z in sofa-local space). */
 const END_FORWARD = 0.14;
 const INNER_FORWARD = END_FORWARD * 0.5;
 
@@ -190,7 +253,6 @@ const ARC_MODULES_BASE: ArcPose[] = [
   { x: 1.56, z: -0.15, ry: 0.36 },
 ];
 
-/** Ends step forward fully; inner pair at 50%; centre nudged slightly toward TV. */
 const ARC_FORWARD_OFFSETS = [END_FORWARD, INNER_FORWARD, CENTER_FORWARD, INNER_FORWARD, END_FORWARD];
 
 const ARC_MODULES: ArcPose[] = ARC_MODULES_BASE.map((pose, i) => ({
@@ -214,105 +276,180 @@ function arcMidpoints(modules: ArcPose[]): ArcPose[] {
 
 const ARC_MIDPOINTS = arcMidpoints(ARC_MODULES);
 
-type ArcRailPose = ArcPose & { kind: "segment" | "joint" };
+const BACK_TILT = -0.09;
+const BASE_H = 0.048;
+const FLOAT_GAP = 0.016;
 
-function arcRailPoses(): ArcRailPose[] {
-  return [
-    ...ARC_MODULES.map((pose) => ({ ...pose, kind: "segment" as const })),
-    ...ARC_MIDPOINTS.map((pose) => ({ ...pose, kind: "joint" as const })),
-  ];
+/** Seat-to-back transition wedge for a continuous silhouette. */
+function BackWedge({
+  width,
+  depth,
+  position,
+  rotation = [0, 0, 0],
+  material,
+}: {
+  width: number;
+  depth: number;
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  material: THREE.MeshPhysicalMaterial;
+}) {
+  return (
+    <FabricBox
+      args={[width, 0.1, depth]}
+      position={position}
+      rotation={rotation}
+      radius={0.06}
+      material={material}
+    />
+  );
 }
 
-/** Subtle base skim — low profile, rounded edge. */
-function ArcTrimRail({ poses }: { poses: ArcRailPose[] }) {
+/** Low floating pedestal + unified cushion + flowing back. */
+function PremiumArcSegment({
+  fabric,
+  piping,
+  isEnd = false,
+  armSide = 1,
+  showPillow = false,
+  accent,
+}: {
+  fabric: THREE.MeshPhysicalMaterial;
+  piping: THREE.MeshStandardMaterial;
+  isEnd?: boolean;
+  armSide?: 1 | -1;
+  showPillow?: boolean;
+  accent?: THREE.MeshPhysicalMaterial;
+}) {
+  const seatY = BASE_H + FLOAT_GAP + 0.09;
+  const cushionH = 0.11;
+  const deckW = SEG_W + SEG_OVERLAP;
+
+  return (
+    <group>
+      <FabricBox args={[deckW, BASE_H, SEG_D]} position={[0, BASE_H / 2, 0]} radius={0.038} material={baseMat} />
+      <RoundedBox
+        args={[deckW - 0.05, 0.006, SEG_D - 0.05]}
+        radius={0.003}
+        smoothness={20}
+        position={[0, BASE_H + 0.001, 0]}
+        material={bronzeMat}
+        castShadow
+      />
+
+      {/* Unified seat cushion with subtle crown */}
+      <FabricBox
+        args={[SEAT_W, cushionH, SEAT_D - 0.04]}
+        position={[0, seatY + cushionH / 2, -0.015]}
+        radius={0.075}
+        material={fabric}
+      />
+      <FabricBox
+        args={[SEAT_W * 0.72, 0.028, SEAT_D * 0.62]}
+        position={[0, seatY + cushionH + 0.008, -0.02]}
+        radius={0.05}
+        material={fabric}
+      />
+      <PipingCord
+        width={SEAT_W * 0.94}
+        position={[0, seatY + cushionH + 0.003, SEAT_D / 2 - 0.09]}
+        material={piping}
+      />
+
+      <BackWedge
+        width={SEAT_W * 0.92}
+        depth={0.12}
+        position={[0, seatY + cushionH + 0.04, 0.2]}
+        rotation={[BACK_TILT * 0.55, 0, 0]}
+        material={fabric}
+      />
+
+      <group position={[0, seatY + cushionH + 0.14, 0.28]} rotation={[BACK_TILT, 0, 0]}>
+        <FabricBox args={[SEAT_W, 0.42, 0.13]} position={[0, 0.13, 0]} radius={0.085} material={fabric} />
+        <FabricBox args={[SEAT_W * 0.96, 0.05, 0.09]} position={[0, 0.34, -0.015]} radius={0.045} material={fabric} />
+        <SoftChannels width={SEAT_W * 0.88} height={0.38} depth={0.13} count={4} position={[0, 0.13, 0]} />
+        <PipingCord width={SEAT_W * 0.94} position={[0, 0.03, 0.068]} material={piping} />
+        <PipingCord width={SEAT_W * 0.94} position={[0, 0.33, -0.01]} material={piping} />
+      </group>
+
+      {isEnd && (
+        <FabricBox
+          args={[0.064, 0.34, SEG_D * 0.8]}
+          position={[armSide * 0.48, seatY + 0.18, 0.015]}
+          radius={0.058}
+          material={fabric}
+        />
+      )}
+
+      {showPillow && accent ? (
+        <FabricBox
+          args={[0.26, 0.09, 0.26]}
+          position={[0.1, seatY + cushionH + 0.06, -0.06]}
+          rotation={[0, 0.22, 0]}
+          radius={0.055}
+          material={accent}
+        />
+      ) : null}
+    </group>
+  );
+}
+
+function PremiumJointFillers({
+  fabric,
+  piping,
+}: {
+  fabric: THREE.MeshPhysicalMaterial;
+  piping: THREE.MeshStandardMaterial;
+}) {
+  const seatY = BASE_H + FLOAT_GAP + 0.09;
+  const cushionH = 0.11;
+
   return (
     <>
-      {poses.map((pose, i) => (
-        <RoundedBox
-          key={`trim-${i}`}
-          args={[pose.kind === "segment" ? SEG_W + 0.01 : 0.66, 0.004, SEG_D + 0.008]}
-          radius={0.002}
-          smoothness={8}
-          position={[pose.x, 0.112, pose.z]}
-          rotation={[0, pose.ry, 0]}
-          material={trimMat}
-        />
+      {ARC_MIDPOINTS.map((pose, i) => (
+        <group key={`joint-${i}`} position={[pose.x, 0, pose.z]} rotation={[0, pose.ry, 0]}>
+          <FabricBox args={[0.5, BASE_H, SEG_D]} position={[0, BASE_H / 2, 0]} radius={0.034} material={baseMat} />
+          <FabricBox
+            args={[0.46, cushionH, SEAT_D - 0.04]}
+            position={[0, seatY + cushionH / 2, -0.015]}
+            radius={0.07}
+            material={fabric}
+          />
+          <BackWedge
+            width={0.42}
+            depth={0.12}
+            position={[0, seatY + cushionH + 0.04, 0.2]}
+            rotation={[BACK_TILT * 0.55, 0, 0]}
+            material={fabric}
+          />
+          <group position={[0, seatY + cushionH + 0.14, 0.28]} rotation={[BACK_TILT, 0, 0]}>
+            <FabricBox args={[0.44, 0.42, 0.13]} position={[0, 0.13, 0]} radius={0.08} material={fabric} />
+            <PipingCord width={0.38} position={[0, 0.03, 0.068]} material={piping} />
+          </group>
+        </group>
       ))}
     </>
   );
 }
 
-const LEG_POSITIONS: [number, number][] = [
-  [-0.36, 0.34],
-  [0.36, 0.34],
-  [-0.36, -0.32],
-  [0.36, -0.32],
-];
-
-const BACK_TILT = -0.09;
-
-/** One arc segment — floating platform, plush cushions, integrated back. */
-function ArcSofaSegment({
-  wool,
-  piping,
-  isEnd = false,
-  armSide = 1,
-}: {
-  wool: THREE.MeshPhysicalMaterial;
-  piping: THREE.MeshStandardMaterial;
-  isEnd?: boolean;
-  armSide?: 1 | -1;
-}) {
-  return (
-    <group>
-      {LEG_POSITIONS.map(([lx, lz]) => (
-        <mesh key={`${lx}-${lz}`} position={[lx, 0.052, lz]} material={legMat} castShadow>
-          <cylinderGeometry args={[0.013, 0.017, 0.104, 24]} />
-        </mesh>
-      ))}
-
-      <WoolBox args={[SEG_W, 0.034, SEG_D]} position={[0, 0.125, 0]} radius={0.034} material={wool} />
-      <WoolBox args={[SEAT_W, 0.138, SEAT_D]} position={[0, 0.285, -0.01]} radius={0.1} material={wool} />
-      <WoolBox args={[SEAT_W * 0.82, 0.028, 0.048]} position={[0, 0.31, -0.46]} radius={0.024} material={wool} />
-
-      <PipingCord width={SEAT_W * 0.9} position={[0, 0.355, -0.44]} material={piping} />
-
-      <group position={[0, 0.5, 0.28]} rotation={[BACK_TILT, 0, 0]}>
-        <WoolBox args={[SEAT_W, 0.38, 0.16]} position={[0, 0.12, 0]} radius={0.1} material={wool} />
-        <WoolBox args={[SEAT_W * 0.88, 0.07, 0.1]} position={[0, 0.33, -0.02]} radius={0.05} material={wool} />
-        <PipingCord width={SEAT_W * 0.9} position={[0, 0.06, 0.09]} material={piping} />
-      </group>
-
-      {isEnd && (
-        <WoolBox
-          args={[0.1, 0.28, SEG_D * 0.84]}
-          position={[armSide * 0.46, 0.35, 0.01]}
-          radius={0.065}
-          material={wool}
-        />
-      )}
-    </group>
-  );
-}
-
-/** Wool fillers at segment joints — blends seat and back into one piece. */
-function ArcJointFillers({
-  wool,
-  piping,
-}: {
-  wool: THREE.MeshPhysicalMaterial;
-  piping: THREE.MeshStandardMaterial;
-}) {
+/** Continuous low bronze rail hugging each module edge. */
+function PremiumBaseSkirt() {
   return (
     <>
+      {ARC_MODULES.map((mod, i) => (
+        <group key={`skirt-${i}`} position={[mod.x, 0.005, mod.z]} rotation={[0, mod.ry, 0]}>
+          <RoundedBox
+            args={[SEG_W + SEG_OVERLAP + 0.01, 0.008, SEG_D + 0.008]}
+            radius={0.003}
+            smoothness={20}
+            material={bronzeMat}
+            castShadow
+          />
+        </group>
+      ))}
       {ARC_MIDPOINTS.map((pose, i) => (
-        <group key={`joint-${i}`} position={[pose.x, 0, pose.z]} rotation={[0, pose.ry, 0]}>
-          <WoolBox args={[0.3, 0.034, SEG_D]} position={[0, 0.125, 0]} radius={0.03} material={wool} />
-          <WoolBox args={[0.28, 0.138, SEAT_D]} position={[0, 0.285, -0.01]} radius={0.09} material={wool} />
-          <group position={[0, 0.5, 0.28]} rotation={[BACK_TILT, 0, 0]}>
-            <WoolBox args={[0.28, 0.38, 0.16]} position={[0, 0.12, 0]} radius={0.095} material={wool} />
-            <PipingCord width={0.24} position={[0, 0.06, 0.09]} material={piping} />
-          </group>
+        <group key={`skirt-mid-${i}`} position={[pose.x, 0.005, pose.z]} rotation={[0, pose.ry, 0]}>
+          <RoundedBox args={[0.48, 0.008, SEG_D + 0.008]} radius={0.003} smoothness={20} material={bronzeMat} />
         </group>
       ))}
     </>
@@ -417,7 +554,6 @@ function TabletopProps({ topY }: { topY: number }) {
   );
 }
 
-/** Pedestal round table — polished stone top, brass edge, bronze base. */
 function RoundCoffeeTable({ position }: { position: [number, number, number] }) {
   const { top, apron, brass, base } = useTableMaterials();
   const apronY = TABLE_TOP_Y - TABLE_TOP_THICK - 0.028;
@@ -458,44 +594,44 @@ function RoundCoffeeTable({ position }: { position: [number, number, number] }) 
   );
 }
 
-/** Single unified arc sectional — same curve, one continuous body. */
-function UnifiedArcSofa({
-  wool,
+function PremiumArcSofa({
+  fabric,
   piping,
+  accent,
 }: {
-  wool: THREE.MeshPhysicalMaterial;
+  fabric: THREE.MeshPhysicalMaterial;
   piping: THREE.MeshStandardMaterial;
+  accent: THREE.MeshPhysicalMaterial;
 }) {
-  const railPoses = arcRailPoses();
-
   return (
     <group>
       {ARC_MODULES.map((mod, i) => (
         <group key={`seg-${i}`} position={[mod.x, 0, mod.z]} rotation={[0, mod.ry, 0]}>
-          <ArcSofaSegment
-            wool={wool}
+          <PremiumArcSegment
+            fabric={fabric}
             piping={piping}
+            accent={accent}
             isEnd={i === 0 || i === ARC_MODULES.length - 1}
             armSide={i === 0 ? -1 : 1}
+            showPillow={i === 2}
           />
         </group>
       ))}
 
-      <ArcJointFillers wool={wool} piping={piping} />
-      <ArcTrimRail poses={railPoses} />
-
+      <PremiumJointFillers fabric={fabric} piping={piping} />
+      <PremiumBaseSkirt />
       <RoundCoffeeTable position={[0, 0, TABLE_Z]} />
     </group>
   );
 }
 
 export function TvWatchCouch() {
-  const { wool, piping } = useSofaMaterials();
+  const { fabric, piping, accent } = useSofaMaterials();
 
   return (
     <group position={[CX, FLOOR_Y, CZ]}>
       <group scale={[SOFA_SCALE, SOFA_SCALE * SOFA_HEIGHT_SCALE, SOFA_SCALE]}>
-        <UnifiedArcSofa wool={wool} piping={piping} />
+        <PremiumArcSofa fabric={fabric} piping={piping} accent={accent} />
       </group>
     </group>
   );

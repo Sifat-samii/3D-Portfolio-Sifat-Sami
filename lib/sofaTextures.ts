@@ -1,5 +1,51 @@
 import * as THREE from "three";
 
+/** Fine bouclé weave — premium upholstery with soft loop texture. */
+export function createBoucleTexture(base = "#b0a898"): THREE.CanvasTexture {
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, size, size);
+
+  const r = parseInt(base.slice(1, 3), 16);
+  const g = parseInt(base.slice(3, 5), 16);
+  const b = parseInt(base.slice(5, 7), 16);
+
+  for (let i = 0; i < 2200; i++) {
+    const px = Math.random() * size;
+    const py = Math.random() * size;
+    const rad = 0.8 + Math.random() * 1.6;
+    const v = Math.random() > 0.5 ? 14 : -12;
+    ctx.fillStyle = `rgba(${r + v},${g + v},${b + v},${0.08 + Math.random() * 0.12})`;
+    ctx.beginPath();
+    ctx.arc(px, py, rad, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  for (let y = 0; y < size; y += 8) {
+    ctx.strokeStyle = `rgba(${r + 8},${g + 6},${b + 4},0.04)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(size, y);
+    ctx.stroke();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(3.5, 3.5);
+  return tex;
+}
+
 /** Fine linen weave — low-contrast, smooth upholstery read. */
 export function createWoolTexture(base = "#e8e0d4"): THREE.CanvasTexture {
   const size = 256;

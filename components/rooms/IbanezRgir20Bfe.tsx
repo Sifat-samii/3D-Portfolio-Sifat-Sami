@@ -13,7 +13,7 @@ import {
   createIbanezHeadGeometry,
   createNeckGeometry,
   createRgBodyGeometry,
-  getRgBindingSegments,
+  createRgBindingGeometry,
   createRgHeelScoopGeometry,
   dotY,
   fbWidth,
@@ -41,9 +41,10 @@ const STEEL_WOUND = "#8a8274";
 
 const BODY_Z = -RG_BODY_DEPTH;
 const FRONT = 0.008;
+const STRING_X = [-0.0205, -0.0123, -0.0041, 0.0041, 0.0123, 0.0205] as const;
 
-const NECK_PU_Y = 0.112;
-const BRIDGE_PU_Y = -0.096;
+const NECK_PU_Y = 0.108;
+const BRIDGE_PU_Y = -0.100;
 
 function useWalnutMaterials() {
   const walnutTex = useMemo(() => createWalnutFlatTexture(), []);
@@ -92,16 +93,25 @@ function useWalnutMaterials() {
   return { walnut, binding, logo };
 }
 
+function PickupCavity({ y, w = 0.092, h = 0.036 }: { y: number; w?: number; h?: number }) {
+  return (
+    <mesh position={[0, y, FRONT - 0.003]}>
+      <boxGeometry args={[w, h, 0.004]} />
+      <meshStandardMaterial color="#1a1410" roughness={0.92} metalness={0.02} />
+    </mesh>
+  );
+}
+
 function EmgPickup({ y }: { y: number }) {
   return (
     <group position={[0, y, FRONT]}>
       <mesh>
-        <boxGeometry args={[0.084, 0.032, 0.009]} />
-        <meshStandardMaterial color="#0a0a0a" roughness={0.52} metalness={0.08} />
+        <boxGeometry args={[0.090, 0.036, 0.01]} />
+        <meshStandardMaterial color="#0c0c0c" roughness={0.48} metalness={0.1} />
       </mesh>
-      <mesh position={[0.028, -0.007, 0.005]}>
+      <mesh position={[0.026, -0.008, 0.0055]}>
         <planeGeometry args={[0.016, 0.005]} />
-        <meshBasicMaterial color="#e0e0e0" />
+        <meshBasicMaterial color="#d8d8d8" />
       </mesh>
     </group>
   );
@@ -111,18 +121,24 @@ function GibraltarBridge() {
   return (
     <group position={[0, BRIDGE_Y, FRONT - 0.001]}>
       <mesh>
-        <boxGeometry args={[0.074, 0.024, 0.008]} />
-        <meshStandardMaterial color={METAL} metalness={0.72} roughness={0.3} />
+        <boxGeometry args={[0.078, 0.026, 0.009]} />
+        <meshStandardMaterial color={METAL} metalness={0.74} roughness={0.28} />
       </mesh>
-      <mesh position={[0, 0, 0.005]}>
-        <boxGeometry args={[0.068, 0.016, 0.0025]} />
-        <meshStandardMaterial color="#141414" metalness={0.8} roughness={0.24} />
+      <mesh position={[0, 0.002, 0.005]}>
+        <boxGeometry args={[0.072, 0.018, 0.003]} />
+        <meshStandardMaterial color="#181818" metalness={0.82} roughness={0.22} />
       </mesh>
-      {[-0.0205, -0.0123, -0.0041, 0.0041, 0.0123, 0.0205].map((ox) => (
-        <mesh key={ox} position={[ox, 0, 0.006]}>
-          <boxGeometry args={[0.006, 0.011, 0.004]} />
-          <meshStandardMaterial color={METAL} metalness={0.74} roughness={0.28} />
-        </mesh>
+      {STRING_X.map((ox) => (
+        <group key={ox} position={[ox, 0, 0.006]}>
+          <mesh>
+            <boxGeometry args={[0.007, 0.012, 0.005]} />
+            <meshStandardMaterial color="#1a1a1a" metalness={0.78} roughness={0.26} />
+          </mesh>
+          <mesh position={[0, 0.007, 0.001]}>
+            <cylinderGeometry args={[0.0012, 0.0012, 0.003, 6]} />
+            <meshStandardMaterial color="#888" metalness={0.88} roughness={0.18} />
+          </mesh>
+        </group>
       ))}
     </group>
   );
@@ -131,33 +147,46 @@ function GibraltarBridge() {
 function IronLabelControls() {
   return (
     <group position={[0, 0, FRONT]}>
-      <mesh position={[0.070, -0.100, 0]}>
-        <cylinderGeometry args={[0.009, 0.009, 0.008, 20]} />
+      <mesh position={[0.078, -0.102, 0]}>
+        <cylinderGeometry args={[0.0095, 0.0095, 0.009, 24]} />
         <meshStandardMaterial color={METAL} metalness={0.58} roughness={0.36} />
       </mesh>
-      <group position={[0.054, -0.116, 0]}>
+      <mesh position={[0.078, -0.102, 0.005]}>
+        <cylinderGeometry args={[0.006, 0.006, 0.0015, 20]} />
+        <meshStandardMaterial color="#2a2a2a" metalness={0.45} roughness={0.42} />
+      </mesh>
+
+      <group position={[0.062, -0.124, 0]}>
         <mesh>
-          <cylinderGeometry args={[0.005, 0.005, 0.009, 10]} />
-          <meshStandardMaterial color="#141414" metalness={0.45} roughness={0.42} />
-        </mesh>
-        <mesh position={[0.003, 0.005, 0.001]} rotation={[0, 0, 0.28]}>
-          <boxGeometry args={[0.0025, 0.007, 0.003]} />
-          <meshStandardMaterial color={METAL} metalness={0.5} roughness={0.4} />
-        </mesh>
-      </group>
-      <group position={[0.080, -0.154, 0]} rotation={[0, 0, -0.4]}>
-        <mesh>
-          <boxGeometry args={[0.0055, 0.022, 0.006]} />
+          <boxGeometry args={[0.0055, 0.008, 0.006]} />
           <meshStandardMaterial color="#9a9a9a" metalness={0.88} roughness={0.2} />
         </mesh>
-        <mesh position={[0, 0.012, 0.001]}>
-          <boxGeometry args={[0.007, 0.01, 0.004]} />
+      </group>
+
+      <group position={[0.094, -0.158, 0]} rotation={[0, 0, -0.42]}>
+        <mesh>
+          <boxGeometry args={[0.006, 0.024, 0.007]} />
+          <meshStandardMaterial color="#9a9a9a" metalness={0.88} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 0.013, 0.001]}>
+          <boxGeometry args={[0.008, 0.011, 0.004]} />
           <meshStandardMaterial color={METAL} metalness={0.4} roughness={0.48} />
         </mesh>
       </group>
-      <mesh position={[0.124, -0.184, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.0065, 0.0065, 0.0035, 12]} />
-        <meshStandardMaterial color="#888" metalness={0.85} roughness={0.22} />
+    </group>
+  );
+}
+
+function OutputJack() {
+  return (
+    <group position={[0.118, -0.192, FRONT - 0.001]} rotation={[0, 0, -0.35]}>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.008, 0.008, 0.006, 14]} />
+        <meshStandardMaterial color={METAL} metalness={0.72} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.005, 0.005, 0.004, 10]} />
+        <meshStandardMaterial color="#1a1a1a" metalness={0.5} roughness={0.45} />
       </mesh>
     </group>
   );
@@ -170,14 +199,14 @@ type IbanezRgir20BfeProps = {
 
 /**
  * RGIR20BFE Walnut Flat — local +Y neck, front hardware on +Z.
- * Walnut grain via canvas texture; binding is one ring mesh (no face grid).
+ * Walnut grain via canvas texture; cream binding; EMG + Gibraltar hardware.
  */
 export function IbanezRgir20Bfe({
   finish = IRON_LABEL_FINISH,
   showInlays = false,
 }: IbanezRgir20BfeProps) {
   const bodyGeom = useMemo(() => createRgBodyGeometry(), []);
-  const bindingSegs = useMemo(() => getRgBindingSegments(), []);
+  const bindingGeom = useMemo(() => createRgBindingGeometry(), []);
   const headGeom = useMemo(() => createIbanezHeadGeometry(), []);
   const fboardGeom = useMemo(() => createFretboardGeometry(), []);
   const neckGeom = useMemo(() => createNeckGeometry(), []);
@@ -214,32 +243,23 @@ export function IbanezRgir20Bfe({
     <group>
       <mesh geometry={bodyGeom} position={[0, 0, BODY_Z]} material={walnut} castShadow receiveShadow />
 
-      {bindingSegs.map((seg, i) => (
-        <mesh
-          key={`bind-${i}`}
-          position={seg.pos}
-          rotation={[0, 0, seg.rotZ]}
-          material={binding}
-        >
-          <boxGeometry args={seg.size} />
-        </mesh>
-      ))}
+      <mesh geometry={bindingGeom} position={[0, 0, 0.0002]} material={binding} />
 
-      <mesh geometry={neckGeom} position={[0, 0, -0.020]} material={neckMat} />
-      <mesh geometry={heelGeom} position={[0, 0.148, -0.017]} material={neckMat} />
+      <mesh geometry={neckGeom} position={[0, 0, -0.021]} material={neckMat} />
+      <mesh geometry={heelGeom} position={[0, 0.148, -0.018]} material={neckMat} />
 
       <mesh geometry={fboardGeom} position={[0, 0, -0.001]} material={fretboardMat} />
 
-      <mesh position={[neckBindW / 2 + 0.001, yMid, 0.011]} material={binding}>
-        <boxGeometry args={[0.002, neckBindLen, 0.0018]} />
+      <mesh position={[neckBindW / 2 + 0.0012, yMid, 0.011]} material={binding}>
+        <boxGeometry args={[0.0022, neckBindLen, 0.002]} />
       </mesh>
-      <mesh position={[-neckBindW / 2 - 0.001, yMid, 0.011]} material={binding}>
-        <boxGeometry args={[0.002, neckBindLen, 0.0018]} />
+      <mesh position={[-neckBindW / 2 - 0.0012, yMid, 0.011]} material={binding}>
+        <boxGeometry args={[0.0022, neckBindLen, 0.002]} />
       </mesh>
 
       <mesh position={[0, NUT_Y, 0.0105]}>
-        <boxGeometry args={[0.043, 0.007, 0.007]} />
-        <meshStandardMaterial color={METAL} roughness={0.55} metalness={0.15} />
+        <boxGeometry args={[0.044, 0.007, 0.007]} />
+        <meshStandardMaterial color="#d0ccc4" roughness={0.48} metalness={0.12} />
       </mesh>
 
       {FRETS.map((y, i) => (
@@ -253,56 +273,68 @@ export function IbanezRgir20Bfe({
         <>
           {SINGLE_DOTS.map((y, i) => (
             <mesh key={`dot-${i}`} position={[0, y, 0.0125]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.004, 0.004, 0.002, 10]} />
+              <cylinderGeometry args={[0.004, 0.004, 0.002, 12]} />
               <meshStandardMaterial color={inlay} roughness={0.55} metalness={0} />
             </mesh>
           ))}
           {[-0.012, 0.012].map((ox, i) => (
             <mesh key={`dot12-${i}`} position={[ox, dotY(12), 0.0125]} rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.004, 0.004, 0.002, 10]} />
+              <cylinderGeometry args={[0.004, 0.004, 0.002, 12]} />
               <meshStandardMaterial color={inlay} roughness={0.55} metalness={0} />
             </mesh>
           ))}
         </>
       )}
 
-      <mesh geometry={headGeom} position={[0, NUT_Y, -0.015]} material={walnut} />
+      <group position={[0, NUT_Y, -0.014]} rotation={[-0.18, 0, 0]}>
+        <mesh geometry={headGeom} material={walnut} />
 
-      <mesh position={[-0.002, NUT_Y + 0.095, 0.007]} rotation={[0, 0, -0.28]} material={logo}>
-        <planeGeometry args={[0.11, 0.032]} />
-      </mesh>
-
-      <mesh position={[0, NUT_Y + 0.021, 0.006]}>
-        <boxGeometry args={[0.024, 0.014, 0.0025]} />
-        <meshStandardMaterial color={METAL} roughness={0.65} metalness={0.1} />
-      </mesh>
-
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <mesh
-          key={`tpost-${i}`}
-          position={[-0.017, NUT_Y + 0.027 + i * 0.0205, 0.006]}
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[0.004, 0.004, 0.013, 8]} />
-          <meshStandardMaterial color={METAL} metalness={0.7} roughness={0.28} />
+        <mesh position={[-0.002, 0.098, 0.009]} rotation={[0.18, 0, -0.28]} material={logo}>
+          <planeGeometry args={[0.112, 0.034]} />
         </mesh>
-      ))}
 
+        <mesh position={[0, 0.022, 0.008]}>
+          <boxGeometry args={[0.026, 0.015, 0.0025]} />
+          <meshStandardMaterial color={METAL} roughness={0.65} metalness={0.1} />
+        </mesh>
+
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <mesh
+            key={`tpost-${i}`}
+            position={[-0.018, 0.028 + i * 0.0205, 0.008]}
+            rotation={[Math.PI / 2, 0, 0]}
+          >
+            <cylinderGeometry args={[0.0042, 0.0042, 0.014, 10]} />
+            <meshStandardMaterial color={METAL} metalness={0.7} roughness={0.28} />
+          </mesh>
+        ))}
+
+        {[0, 1].map((i) => (
+          <mesh key={`stree-${i}`} position={[0.008, 0.014 + i * 0.006, 0.009]}>
+            <boxGeometry args={[0.014, 0.003, 0.003]} />
+            <meshStandardMaterial color={METAL} metalness={0.65} roughness={0.35} />
+          </mesh>
+        ))}
+      </group>
+
+      <PickupCavity y={NECK_PU_Y} />
+      <PickupCavity y={BRIDGE_PU_Y} />
       <EmgPickup y={NECK_PU_Y} />
       <EmgPickup y={BRIDGE_PU_Y} />
       <GibraltarBridge />
       <IronLabelControls />
+      <OutputJack />
 
-      <mesh position={[-0.150, 0.272, 0.007]}>
-        <cylinderGeometry args={[0.0045, 0.0045, 0.007, 10]} />
+      <mesh position={[0.108, 0.212, 0.007]}>
+        <cylinderGeometry args={[0.0048, 0.0048, 0.008, 10]} />
         <meshStandardMaterial color={METAL} metalness={0.65} roughness={0.35} />
       </mesh>
-      <mesh position={[0, -0.230, 0.007]}>
-        <cylinderGeometry args={[0.0045, 0.0045, 0.007, 10]} />
+      <mesh position={[0, -0.238, 0.007]}>
+        <cylinderGeometry args={[0.0048, 0.0048, 0.008, 10]} />
         <meshStandardMaterial color={METAL} metalness={0.65} roughness={0.35} />
       </mesh>
 
-      {[-0.0205, -0.0123, -0.0041, 0.0041, 0.0123, 0.0205].map((ox, i) => (
+      {STRING_X.map((ox, i) => (
         <mesh key={`str-${i}`} position={[ox, (NUT_Y + BRIDGE_Y) / 2, 0.016]}>
           <boxGeometry args={[i < 3 ? 0.002 : 0.0013, NUT_Y - BRIDGE_Y, 0.001]} />
           <meshStandardMaterial

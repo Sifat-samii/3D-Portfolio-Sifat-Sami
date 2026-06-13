@@ -1,23 +1,23 @@
 "use client";
 
 /**
- * High corner drum riser — flush with the east and south walls, arced front
- * edge bulging outward toward the kit (convex front).
+ * High corner drum riser — quarter-circle platform flush with the east and south walls.
  *
- * Group origin = south-east corner on the room floor.
- *   Local −X → west (into room)
- *   Local −Z → north (into room)
+ * Group origin = south-east corner on the room floor (circle centre).
+ *   Local −X → west along the south wall (x axis)
+ *   Local +Y (shape) → north along the east wall (−Z in world)
+ *
+ * Footprint = ¼ disc: radius R from the corner, bounded by the two walls and one arc.
  */
 
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 
-export const DRUM_STAGE_WEST = 5.05;
-export const DRUM_STAGE_NORTH = 4.75;
+/** Radius along both walls — equal span on south (x) and east (z) axes. */
+export const DRUM_STAGE_RADIUS = 6.305;
 export const PLATFORM_H = 0.30;
 const CARPET_THICK = 0.012;
-/** Outward bow — control point pushed past the diagonal (convex toward the kit). */
-const ARC_BOW_OUT = 0.30;
+const ARC_SEGMENTS = 48;
 
 const RISER = "#4a3d30";
 const SKIRT = "#1a1610";
@@ -27,68 +27,57 @@ const STAGE_FLOOR = "#a8a4a0";
 export const DRUM_FLOOR_Y = 0.10;
 export const DRUM_STAGE_SURFACE_Y = DRUM_FLOOR_Y + PLATFORM_H + CARPET_THICK;
 
+/** @deprecated Use DRUM_STAGE_RADIUS — kept for callers expecting west extent. */
+export const DRUM_STAGE_WEST = DRUM_STAGE_RADIUS;
+/** @deprecated Use DRUM_STAGE_RADIUS — kept for callers expecting north extent. */
+export const DRUM_STAGE_NORTH = DRUM_STAGE_RADIUS;
+
 type DrumStagePlatformProps = {
   cornerX: number;
   cornerZ: number;
 };
 
 /**
- * 2D footprint in the XZ plane (y = 0). SE corner at origin.
- * Points run: corner → west along south wall → outward arc → north along east wall → corner.
+ * Quarter-circle footprint in the shape XY plane (maps to world X / −Z).
+ * SE corner at origin; arc runs from (−R, 0) on the south wall to (0, R) on the east wall.
  */
-function buildFootprint(west: number, north: number, bowOut: number) {
+function buildQuarterCircleFootprint(radius: number) {
   const shape = new THREE.Shape();
   shape.moveTo(0, 0);
-  shape.lineTo(-west, 0);
-  // Control beyond the diagonal — bulges outward into the room (convex front)
-  shape.quadraticCurveTo(-west * (1 + bowOut), north * (1 + bowOut), 0, north);
+  shape.lineTo(-radius, 0);
+  shape.absarc(0, 0, radius, Math.PI, Math.PI / 2, true);
   shape.lineTo(0, 0);
   return shape;
 }
 
-function extrudeFootprint(
-  west: number,
-  north: number,
-  bowOut: number,
-  height: number,
-  bevel = false,
-) {
-  const shape = buildFootprint(west, north, bowOut);
+function extrudeFootprint(radius: number, height: number, bevel = false) {
+  const shape = buildQuarterCircleFootprint(radius);
   const geom = new THREE.ExtrudeGeometry(shape, {
     depth: height,
     bevelEnabled: bevel,
     bevelThickness: bevel ? 0.010 : 0,
     bevelSize: bevel ? 0.008 : 0,
     bevelSegments: 2,
-    curveSegments: 40,
+    curveSegments: ARC_SEGMENTS,
   });
-  // Shape lies in XY; extrude +Z → rotate so +Z becomes +Y (up)
   geom.rotateX(-Math.PI / 2);
   geom.computeVertexNormals();
   return geom;
 }
 
 export function DrumStagePlatform({ cornerX, cornerZ }: DrumStagePlatformProps) {
-
   const platformGeom = useMemo(
-    () => extrudeFootprint(DRUM_STAGE_WEST, DRUM_STAGE_NORTH, ARC_BOW_OUT, PLATFORM_H, true),
+    () => extrudeFootprint(DRUM_STAGE_RADIUS, PLATFORM_H, true),
     [],
   );
 
   const carpetGeom = useMemo(() => {
     const inset = 0.12;
-    return extrudeFootprint(
-      DRUM_STAGE_WEST - inset,
-      DRUM_STAGE_NORTH - inset,
-      ARC_BOW_OUT,
-      CARPET_THICK,
-      false,
-    );
+    return extrudeFootprint(DRUM_STAGE_RADIUS - inset, CARPET_THICK, false);
   }, []);
 
   const skirtGeom = useMemo(
-    () =>
-      extrudeFootprint(DRUM_STAGE_WEST + 0.03, DRUM_STAGE_NORTH + 0.03, ARC_BOW_OUT, 0.012, false),
+    () => extrudeFootprint(DRUM_STAGE_RADIUS + 0.03, 0.012, false),
     [],
   );
 
@@ -126,11 +115,14 @@ export function DrumStagePlatform({ cornerX, cornerZ }: DrumStagePlatformProps) 
   );
 }
 
-/** Kit centre on the stage — shifted toward the corner so the full kit sits on the carpet. */
+/** Centroid of a quarter-disc — offset from the SE corner along west and north. */
+export const DRUM_STAGE_CENTROID = (4 * DRUM_STAGE_RADIUS) / (3 * Math.PI);
+
+/** Kit centre at the geometric centre of the quarter-disc platform. */
 export function drumKitStagePosition(cornerX: number, cornerZ: number): [number, number, number] {
   return [
-    cornerX - DRUM_STAGE_WEST * 0.46,
+    cornerX - DRUM_STAGE_CENTROID,
     DRUM_STAGE_SURFACE_Y,
-    cornerZ - DRUM_STAGE_NORTH * 0.42,
+    cornerZ - DRUM_STAGE_CENTROID,
   ];
 }

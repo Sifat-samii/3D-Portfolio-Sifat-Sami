@@ -14,8 +14,7 @@
  *
  * World placement:  group position [-21.1, 0.1, -1.5], scale 1.6
  *   → desk back edge x ≈ -21.78 (wall inner face ≈ -21.88, 10 cm cable gap)
- *   → desk spans z ≈ -3.1 … 0.1 — exactly the empty wall zone between the
- *     two poster clusters (cluster edges at z ≈ -3.0 and 0.1)
+ *   → desk spans z ≈ -3.5 … 0.3 — expanded between poster clusters
  *   → desk surface world y ≈ 1.30, chair seat ≈ 0.98
  *
  * All screens / drivers face +X via rotation [0, π/2, 0]
@@ -24,10 +23,25 @@
 
 import { IbanezRgir20Bfe, WALNUT_FLAT_FINISH } from "@/components/rooms/IbanezRgir20Bfe";
 import { MarshallMg15Front } from "@/components/rooms/MarshallMg15Front";
+import { DeskIpad } from "@/components/rooms/DeskIpad";
+import { RiserShelfCactus, StudioDeskScreens } from "@/components/rooms/StudioDeskScreens";
+import { StudioMonitorStand } from "@/components/rooms/StudioMonitorSpeaker";
+import { StudioKeyboardDrawer } from "@/components/rooms/StudioKeyboardDrawer";
+import { StudioRiserBay } from "@/components/rooms/StudioRiserBay";
 import { scaleWorldZ } from "@/lib/roomLayout";
 
 const S = 1.6;                      // global display scale
 const POS: [number, number, number] = [-21.1, 0.1, scaleWorldZ(0)];
+
+// ── Desk footprint (local Z = depth along wall) ───────────────────────────────
+const DESK_DEPTH = 2.7;             // was 2.0 — +0.35 m per end
+const DESK_HALF = DESK_DEPTH / 2;
+const DESK_WIDTH = 0.85;
+const MONITOR_STAND_Z = DESK_HALF + 0.48;
+const RISER_DEPTH = DESK_DEPTH - 0.54;
+const LEG_Z = DESK_HALF - 0.07;
+const RACK_Z = DESK_HALF - 0.20;
+const RISER_SUPPORT_Z = DESK_HALF * 0.62;
 
 // ── Key local heights ─────────────────────────────────────────────────────────
 const TOP = 0.75;                   // desk surface
@@ -39,8 +53,6 @@ const WALNUT_LT = "#3e2814";        // grain stripes
 const FRAME     = "#131110";        // black powder-coat steel
 const ALU       = "#9a958c";        // brushed aluminium
 const GEAR      = "#0d0b0a";        // dark equipment body
-const CREAM     = "#e6e0d6";        // monitor cabinet white
-const GLASS     = "#020407";        // screen glass
 const LEATHER   = "#16130f";        // chair leather
 const FABRIC    = "#1d1a17";        // chair fabric / mesh
 
@@ -54,8 +66,6 @@ const ELECTRIC_GUITAR_YAW = -(5 * Math.PI) / 180;
 const ELECTRIC_GUITAR_LEAN = (5 * Math.PI) / 180;
 /** Extra space between the electric guitar stand and the amp (+Z / south). */
 const GUITAR_AMP_GAP_Z = 0.24;
-/** Monitor stand centre offset from desk centre (+Z / −Z) — clears desk edge (half-depth 1.0 m). */
-const MONITOR_STAND_Z = 1.48;
 /** Acoustic stand — extra clearance from desk (+X front, +Z south). */
 const ACOUSTIC_STAND_AWAY_X = 0.14;
 const ACOUSTIC_STAND_AWAY_Z = 0.24;
@@ -72,26 +82,26 @@ export function StudioDesk() {
           1. DESK — walnut top, black steel frame, dual built-in racks
          ═══════════════════════════════════════════════════════════ */}
 
-      {/* Main walnut tabletop — 2.0 m × 0.85 m */}
+      {/* Main walnut tabletop */}
       <mesh position={[0, TOP, 0]}>
-        <boxGeometry args={[0.85, 0.045, 2.0]} />
+        <boxGeometry args={[DESK_WIDTH, 0.045, DESK_DEPTH]} />
         <meshStandardMaterial color={WALNUT} roughness={0.42} metalness={0.05} />
       </mesh>
       {/* Grain stripes */}
-      {[-0.78, -0.44, -0.12, 0.18, 0.50, 0.80].map((oz, i) => (
+      {[-1.08, -0.62, -0.18, 0.26, 0.68, 1.10].map((oz, i) => (
         <mesh key={`gr-${i}`} position={[0, TOP + 0.0235, oz]}>
-          <boxGeometry args={[0.83, 0.0012, 0.024 + (i % 3) * 0.010]} />
+          <boxGeometry args={[DESK_WIDTH - 0.02, 0.0012, 0.024 + (i % 3) * 0.010]} />
           <meshStandardMaterial color={WALNUT_LT} roughness={0.46} metalness={0.03} />
         </mesh>
       ))}
       {/* Curved ergonomic front edge (rounded cap) */}
-      <mesh position={[0.425, TOP, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.0225, 0.0225, 2.0, 12]} />
+      <mesh position={[DESK_WIDTH / 2, TOP, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.0225, 0.0225, DESK_DEPTH, 12]} />
         <meshStandardMaterial color={WALNUT} roughness={0.42} metalness={0.05} />
       </mesh>
 
       {/* Steel side-panel legs */}
-      {[-0.93, 0.93].map((oz) => (
+      {[-LEG_Z, LEG_Z].map((oz) => (
         <mesh key={`leg-${oz}`} position={[0, TOP / 2 - 0.02, oz]}>
           <boxGeometry args={[0.72, TOP - 0.04, 0.055]} />
           <meshStandardMaterial color={FRAME} metalness={0.55} roughness={0.35} />
@@ -99,11 +109,11 @@ export function StudioDesk() {
       ))}
       {/* Rear cross-beam + cable channel */}
       <mesh position={[-0.36, TOP - 0.12, 0]}>
-        <boxGeometry args={[0.05, 0.16, 1.84]} />
+        <boxGeometry args={[0.05, 0.16, DESK_DEPTH - 0.16]} />
         <meshStandardMaterial color={FRAME} metalness={0.45} roughness={0.45} />
       </mesh>
       {/* Cable channel slot detail */}
-      {[-0.6, 0, 0.6].map((oz) => (
+      {[-DESK_HALF * 0.6, 0, DESK_HALF * 0.6].map((oz) => (
         <mesh key={`slot-${oz}`} position={[-0.332, TOP - 0.12, oz]}>
           <boxGeometry args={[0.006, 0.10, 0.16]} />
           <meshStandardMaterial color="#000000" roughness={0.95} metalness={0.0} />
@@ -111,7 +121,7 @@ export function StudioDesk() {
       ))}
 
       {/* ── Dual rack spaces built into both desk sides (4U each) ── */}
-      {[-0.80, 0.80].map((oz, side) => (
+      {[-RACK_Z, RACK_Z].map((oz, side) => (
         <group key={`rack-${side}`} position={[0, 0, oz]}>
           {/* Rack cabinet shell */}
           <mesh position={[0.06, TOP / 2 - 0.04, 0]}>
@@ -176,116 +186,29 @@ export function StudioDesk() {
         </group>
       ))}
 
+      {/* ── Sliding keyboard drawer (under-desk tray) ── */}
+      <StudioKeyboardDrawer topY={TOP} centerZ={0.02} trayWidth={1.64} />
+
       {/* ── Monitor riser shelf ── */}
       <mesh position={[-0.27, RISER, 0]}>
-        <boxGeometry args={[0.30, 0.035, 1.46]} />
+        <boxGeometry args={[0.30, 0.035, RISER_DEPTH]} />
         <meshStandardMaterial color={WALNUT} roughness={0.42} metalness={0.05} />
       </mesh>
-      {[-0.62, 0, 0.62].map((oz) => (
+      {[-RISER_SUPPORT_Z, 0, RISER_SUPPORT_Z].map((oz) => (
         <mesh key={`rsp-${oz}`} position={[-0.27, TOP + 0.21, oz]}>
           <boxGeometry args={[0.26, 0.38, 0.035]} />
           <meshStandardMaterial color={FRAME} metalness={0.55} roughness={0.35} />
         </mesh>
       ))}
 
+      {/* ── Recording bay — interfaces, soundcard, console in riser hollow ── */}
+      <StudioRiserBay topY={TOP} riserY={RISER} centerX={-0.20} />
+
       {/* ═══════════════════════════════════════════════════════════
           2. SCREENS — ultrawide centre + vertical secondary
          ═══════════════════════════════════════════════════════════ */}
 
-      {/* Heavy monitor arm */}
-      <mesh position={[-0.26, RISER + 0.10, 0]}>
-        <boxGeometry args={[0.06, 0.20, 0.06]} />
-        <meshStandardMaterial color={FRAME} metalness={0.65} roughness={0.28} />
-      </mesh>
-      <mesh position={[-0.20, RISER + 0.26, 0]} rotation={[0, 0, -0.5]}>
-        <boxGeometry args={[0.035, 0.22, 0.035]} />
-        <meshStandardMaterial color={FRAME} metalness={0.65} roughness={0.28} />
-      </mesh>
-
-      {/* Ultrawide bezel — 1.45 m wide (≈ 49") */}
-      <mesh position={[-0.10, RISER + 0.42, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <boxGeometry args={[1.45, 0.62, 0.035]} />
-        <meshStandardMaterial color="#050505" metalness={0.50} roughness={0.26} />
-      </mesh>
-      {/* Screen glass — DAW session view */}
-      <mesh position={[-0.080, RISER + 0.42, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[1.39, 0.56]} />
-        <meshStandardMaterial
-          color={GLASS}
-          emissive="#101e38"
-          emissiveIntensity={0.85}
-          roughness={0.07}
-          metalness={0.30}
-        />
-      </mesh>
-      {/* DAW track lanes (8 colour-coded) */}
-      {Array.from({ length: 8 }, (_, i) => (
-        <mesh
-          key={`lane-${i}`}
-          position={[-0.076, RISER + 0.64 - i * 0.058, 0.10]}
-          rotation={[0, Math.PI / 2, 0]}
-        >
-          <planeGeometry args={[1.05, 0.040]} />
-          <meshStandardMaterial
-            color={GLASS}
-            emissive={["#2563eb", "#16a34a", "#dc2626", "#9333ea", "#0891b2", "#ca8a04", "#db2777", "#4f46e5"][i]}
-            emissiveIntensity={0.95}
-            roughness={0.1}
-          />
-        </mesh>
-      ))}
-      {/* Mixer strip column on screen left */}
-      <mesh position={[-0.076, RISER + 0.42, -0.575]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[0.20, 0.52]} />
-        <meshStandardMaterial
-          color={GLASS}
-          emissive="#1e3a5f"
-          emissiveIntensity={1.0}
-          roughness={0.1}
-        />
-      </mesh>
-      {/* Playhead */}
-      <mesh position={[-0.072, RISER + 0.42, 0.18]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[0.006, 0.54]} />
-        <meshStandardMaterial color={GLASS} emissive="#fbbf24" emissiveIntensity={2.2} roughness={0.1} />
-      </mesh>
-
-      {/* Vertical secondary monitor (right of ultrawide) */}
-      <mesh position={[-0.14, RISER + 0.40, 0.97]} rotation={[0, Math.PI / 2 + 0.18, 0]}>
-        <boxGeometry args={[0.44, 0.72, 0.030]} />
-        <meshStandardMaterial color="#050505" metalness={0.50} roughness={0.26} />
-      </mesh>
-      <mesh position={[-0.119, RISER + 0.40, 0.966]} rotation={[0, Math.PI / 2 + 0.18, 0]}>
-        <planeGeometry args={[0.40, 0.68]} />
-        <meshStandardMaterial
-          color={GLASS}
-          emissive="#0c1a30"
-          emissiveIntensity={0.70}
-          roughness={0.08}
-          metalness={0.28}
-        />
-      </mesh>
-      {/* Plugin window blocks on vertical screen */}
-      {[0.22, 0.0, -0.22].map((oy, i) => (
-        <mesh
-          key={`plug-${i}`}
-          position={[-0.114, RISER + 0.40 + oy, 0.962]}
-          rotation={[0, Math.PI / 2 + 0.18, 0]}
-        >
-          <planeGeometry args={[0.34, 0.16]} />
-          <meshStandardMaterial
-            color={GLASS}
-            emissive={["#155e75", "#3730a3", "#166534"][i]}
-            emissiveIntensity={0.95}
-            roughness={0.1}
-          />
-        </mesh>
-      ))}
-      {/* Vertical monitor stand */}
-      <mesh position={[-0.24, RISER + 0.02, 0.97]}>
-        <boxGeometry args={[0.04, 0.16, 0.04]} />
-        <meshStandardMaterial color={FRAME} metalness={0.6} roughness={0.3} />
-      </mesh>
+      <StudioDeskScreens riserY={RISER} />
 
       {/* ═══════════════════════════════════════════════════════════
           3. STUDIO MONITORS — isolation floor stands, toed-in
@@ -293,100 +216,19 @@ export function StudioDesk() {
          ═══════════════════════════════════════════════════════════ */}
 
       {[-MONITOR_STAND_Z, MONITOR_STAND_Z].map((oz, side) => {
-        // Toe-in: left (north) speaker yaws south-east, right yaws north-east
         const yaw = Math.PI / 2 + (side === 0 ? -0.30 : 0.30);
         return (
-          <group key={`spk-${side}`} position={[-0.18, 0, oz]}>
-            {/* Stand base plate */}
-            <mesh position={[0, 0.02, 0]}>
-              <boxGeometry args={[0.40, 0.04, 0.40]} />
-              <meshStandardMaterial color={FRAME} metalness={0.55} roughness={0.35} />
-            </mesh>
-            {/* Stand column */}
-            <mesh position={[0, 0.55, 0]}>
-              <boxGeometry args={[0.10, 1.06, 0.10]} />
-              <meshStandardMaterial color={FRAME} metalness={0.55} roughness={0.35} />
-            </mesh>
-            {/* Isolation pad */}
-            <mesh position={[0, 1.095, 0]}>
-              <boxGeometry args={[0.32, 0.035, 0.30]} />
-              <meshStandardMaterial color="#191715" roughness={0.92} metalness={0.0} />
-            </mesh>
-            {/* Speaker — toed-in group */}
-            <group position={[0, 1.36, 0]} rotation={[0, yaw, 0]}>
-              {/* Cabinet */}
-              <mesh>
-                <boxGeometry args={[0.36, 0.50, 0.32]} />
-                <meshStandardMaterial color={CREAM} roughness={0.52} metalness={0.04} />
-              </mesh>
-              {/* Front baffle inset */}
-              <mesh position={[0, 0, 0.162]}>
-                <boxGeometry args={[0.33, 0.47, 0.008]} />
-                <meshStandardMaterial color="#dcd5c8" roughness={0.55} metalness={0.04} />
-              </mesh>
-              {/* Woofer ring */}
-              <mesh position={[0, -0.075, 0.168]}>
-                <circleGeometry args={[0.125, 30]} />
-                <meshStandardMaterial color="#191717" roughness={0.75} metalness={0.05} />
-              </mesh>
-              {/* Woofer surround */}
-              <mesh position={[0, -0.075, 0.169]}>
-                <torusGeometry args={[0.105, 0.013, 8, 30]} />
-                <meshStandardMaterial color="#2c2a2a" roughness={0.68} metalness={0.08} />
-              </mesh>
-              {/* Dust cap */}
-              <mesh position={[0, -0.075, 0.171]}>
-                <circleGeometry args={[0.038, 18]} />
-                <meshStandardMaterial color="#262424" roughness={0.55} metalness={0.22} />
-              </mesh>
-              {/* Tweeter waveguide */}
-              <mesh position={[0, 0.135, 0.169]}>
-                <torusGeometry args={[0.048, 0.009, 8, 22]} />
-                <meshStandardMaterial color="#d8d2c6" roughness={0.50} metalness={0.06} />
-              </mesh>
-              {/* Tweeter dome */}
-              <mesh position={[0, 0.135, 0.168]}>
-                <circleGeometry args={[0.032, 18]} />
-                <meshStandardMaterial color="#171515" metalness={0.55} roughness={0.32} />
-              </mesh>
-              {/* Power LED */}
-              <mesh position={[0.13, -0.21, 0.166]}>
-                <boxGeometry args={[0.010, 0.010, 0.005]} />
-                <meshStandardMaterial color="#070707" emissive="#28e848" emissiveIntensity={3.0} roughness={0.3} />
-              </mesh>
-            </group>
-          </group>
+          <StudioMonitorStand
+            key={`spk-${side}`}
+            position={[-0.18, 0, oz]}
+            yaw={yaw}
+          />
         );
       })}
 
       {/* ═══════════════════════════════════════════════════════════
-          4. DESK GEAR — interface, controller, monitor ctrl, HP amp
+          4. DESK GEAR — controller, monitor ctrl (recording bay under riser)
          ═══════════════════════════════════════════════════════════ */}
-
-      {/* ── Audio interface (UA Apollo style) on riser left ── */}
-      <group position={[-0.26, RISER + 0.052, -0.50]}>
-        <mesh>
-          <boxGeometry args={[0.24, 0.068, 0.34]} />
-          <meshStandardMaterial color="#16130f" roughness={0.45} metalness={0.30} />
-        </mesh>
-        {/* Big monitor knob */}
-        <mesh position={[0.125, 0.0, 0.08]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.028, 0.028, 0.018, 18]} />
-          <meshStandardMaterial color={ALU} metalness={0.68} roughness={0.22} />
-        </mesh>
-        {/* Gain knobs */}
-        {[-0.06, -0.12].map((kz, i) => (
-          <mesh key={`g-${i}`} position={[0.125, 0.0, kz]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.014, 0.014, 0.014, 12]} />
-            <meshStandardMaterial color={ALU} metalness={0.62} roughness={0.26} />
-          </mesh>
-        ))}
-        {/* Meter display */}
-        <mesh position={[0.123, 0.022, 0]}>
-          <boxGeometry args={[0.004, 0.016, 0.12]} />
-          <meshStandardMaterial color="#070707" emissive="#22c55e" emissiveIntensity={1.8} roughness={0.3} />
-        </mesh>
-      </group>
 
       {/* ── Compact control surface / mixer (front centre-right) ── */}
       <group position={[0.16, TOP + 0.038, 0.52]}>
@@ -440,84 +282,8 @@ export function StudioDesk() {
         </mesh>
       </group>
 
-      {/* ── Headphone amplifier on riser right ── */}
-      <group position={[-0.26, RISER + 0.042, 0.52]}>
-        <mesh>
-          <boxGeometry args={[0.18, 0.052, 0.22]} />
-          <meshStandardMaterial color="#14110e" roughness={0.50} metalness={0.26} />
-        </mesh>
-        {[-0.05, 0.02].map((kz, i) => (
-          <mesh key={`hk-${i}`} position={[0.095, 0, kz]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.013, 0.013, 0.012, 12]} />
-            <meshStandardMaterial color={ALU} metalness={0.62} roughness={0.26} />
-          </mesh>
-        ))}
-        <mesh position={[0.093, 0.016, 0.075]}>
-          <boxGeometry args={[0.004, 0.008, 0.008]} />
-          <meshStandardMaterial color="#070707" emissive="#3b82f6" emissiveIntensity={2.4} roughness={0.3} />
-        </mesh>
-      </group>
-
       {/* ═══════════════════════════════════════════════════════════
-          5. MIDI KEYBOARD — 61 keys, front-left of desk
-         ═══════════════════════════════════════════════════════════ */}
-
-      <group position={[0.17, TOP + 0.040, -0.46]}>
-        {/* Chassis */}
-        <mesh>
-          <boxGeometry args={[0.30, 0.055, 0.92]} />
-          <meshStandardMaterial color={GEAR} roughness={0.58} metalness={0.16} />
-        </mesh>
-        {/* White keys — 36 naturals */}
-        {Array.from({ length: 36 }, (_, i) => (
-          <mesh key={`wk-${i}`} position={[0.085, 0.032, -0.428 + i * 0.0245]}>
-            <boxGeometry args={[0.115, 0.014, 0.021]} />
-            <meshStandardMaterial color="#f2ede4" roughness={0.38} metalness={0.0} />
-          </mesh>
-        ))}
-        {/* Black keys — 7-note octave pattern (skip E♯/B♯ gaps) */}
-        {Array.from({ length: 35 }, (_, i) => {
-          if (i % 7 === 2 || i % 7 === 6) return null;
-          return (
-            <mesh key={`bk-${i}`} position={[0.055, 0.044, -0.415 + i * 0.0245]}>
-              <boxGeometry args={[0.068, 0.014, 0.014]} />
-              <meshStandardMaterial color="#0a0908" roughness={0.45} metalness={0.10} />
-            </mesh>
-          );
-        })}
-        {/* Pitch + mod wheels */}
-        {[-0.025, 0.025].map((kz, i) => (
-          <mesh key={`wl-${i}`} position={[0.10, 0.030, 0.43 + kz]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.020, 0.020, 0.024, 14]} />
-            <meshStandardMaterial color="#1e1b18" metalness={0.45} roughness={0.42} />
-          </mesh>
-        ))}
-        {/* Pad grid 2×4 */}
-        {Array.from({ length: 8 }, (_, i) => (
-          <mesh
-            key={`pad-${i}`}
-            position={[-0.075 - Math.floor(i / 4) * 0.055, 0.030, -0.30 + (i % 4) * 0.055]}
-          >
-            <boxGeometry args={[0.042, 0.008, 0.042]} />
-            <meshStandardMaterial
-              color="#111010"
-              emissive={["#7c3aed", "#0ea5e9", "#10b981", "#f59e0b"][i % 4]}
-              emissiveIntensity={0.85}
-              roughness={0.4}
-            />
-          </mesh>
-        ))}
-        {/* Encoder knobs row */}
-        {Array.from({ length: 6 }, (_, i) => (
-          <mesh key={`mk-${i}`} position={[-0.085, 0.032, 0.05 + i * 0.052]}>
-            <cylinderGeometry args={[0.011, 0.011, 0.014, 10]} />
-            <meshStandardMaterial color={ALU} metalness={0.58} roughness={0.30} />
-          </mesh>
-        ))}
-      </group>
-
-      {/* ═══════════════════════════════════════════════════════════
-          6. COMPUTER PERIPHERALS — mech keyboard, mouse, tablet
+          6. COMPUTER PERIPHERALS — mech keyboard, mouse, iPad
          ═══════════════════════════════════════════════════════════ */}
 
       {/* Mechanical keyboard */}
@@ -545,23 +311,14 @@ export function StudioDesk() {
         <meshStandardMaterial color="#0e0c0a" roughness={0.45} metalness={0.22} />
       </mesh>
 
-      {/* Tablet on stand (left of keyboard) */}
-      <group position={[0.24, TOP + 0.085, -1.00]} rotation={[0, Math.PI / 2, -0.45]}>
-        <mesh>
-          <boxGeometry args={[0.020, 0.26, 0.19]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.30} metalness={0.45} />
-        </mesh>
-        <mesh position={[0.011, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-          <planeGeometry args={[0.17, 0.24]} />
-          <meshStandardMaterial color={GLASS} emissive="#16263e" emissiveIntensity={0.7} roughness={0.08} />
-        </mesh>
-      </group>
+      {/* iPad — flat on desk between keyboard and notebook */}
+      <DeskIpad position={[0.28, TOP + 0.003, -0.38]} rotation={[0, -0.1, 0]} />
 
       {/* ═══════════════════════════════════════════════════════════
           7. MICROPHONE — condenser + boom + shock mount + pop filter
          ═══════════════════════════════════════════════════════════ */}
 
-      <group position={[-0.30, 0, 0.93]}>
+      <group position={[-0.30, 0, DESK_HALF - 0.07]}>
         {/* Desk clamp */}
         <mesh position={[0, TOP + 0.045, 0]}>
           <boxGeometry args={[0.055, 0.09, 0.055]} />
@@ -614,51 +371,11 @@ export function StudioDesk() {
       </group>
 
       {/* ═══════════════════════════════════════════════════════════
-          8. HEADPHONES — over-ear, on dedicated desk-edge hook
-         ═══════════════════════════════════════════════════════════ */}
-
-      <group position={[0.42, TOP - 0.07, -0.97]}>
-        {/* Hook bracket under desk edge */}
-        <mesh position={[0, 0.07, 0]}>
-          <boxGeometry args={[0.07, 0.018, 0.05]} />
-          <meshStandardMaterial color={FRAME} metalness={0.60} roughness={0.32} />
-        </mesh>
-        <mesh position={[0.025, 0.012, 0]}>
-          <boxGeometry args={[0.016, 0.10, 0.045]} />
-          <meshStandardMaterial color={FRAME} metalness={0.60} roughness={0.32} />
-        </mesh>
-        {/* Headband hanging on hook */}
-        <mesh position={[0.025, -0.085, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.095, 0.013, 10, 26, Math.PI]} />
-          <meshStandardMaterial color="#1c1916" metalness={0.50} roughness={0.38} />
-        </mesh>
-        {/* Headband cushion */}
-        <mesh position={[0.025, 0.0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.092, 0.009, 8, 18, Math.PI * 0.5]} />
-          <meshStandardMaterial color="#26221e" roughness={0.75} metalness={0.05} />
-        </mesh>
-        {/* Ear cups */}
-        {[-0.098, 0.098].map((cz, i) => (
-          <group key={`cup-${i}`} position={[0.025, -0.10, cz]}>
-            <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <cylinderGeometry args={[0.052, 0.056, 0.040, 20]} />
-              <meshStandardMaterial color="#14110e" roughness={0.55} metalness={0.16} />
-            </mesh>
-            {/* Cushion ring */}
-            <mesh position={[0, 0, cz < 0 ? 0.022 : -0.022]} rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[0.038, 0.013, 8, 18]} />
-              <meshStandardMaterial color="#1e1a16" roughness={0.82} metalness={0.03} />
-            </mesh>
-          </group>
-        ))}
-      </group>
-
-      {/* ═══════════════════════════════════════════════════════════
-          9. ACCESSORIES — mug, plant, notebook
+          8. ACCESSORIES — mug, plant, notebook
          ═══════════════════════════════════════════════════════════ */}
 
       {/* Coffee mug */}
-      <group position={[0.34, TOP + 0.07, 0.80]}>
+      <group position={[0.34, TOP + 0.07, DESK_HALF - 0.20]}>
         <mesh>
           <cylinderGeometry args={[0.045, 0.040, 0.105, 18]} />
           <meshStandardMaterial color="#1a1714" roughness={0.48} metalness={0.06} />
@@ -673,23 +390,7 @@ export function StudioDesk() {
         </mesh>
       </group>
 
-      {/* Small desk plant */}
-      <group position={[-0.27, RISER + 0.04, -0.92]}>
-        <mesh>
-          <cylinderGeometry args={[0.050, 0.042, 0.085, 14]} />
-          <meshStandardMaterial color="#3e2a1a" roughness={0.70} metalness={0.03} />
-        </mesh>
-        {[
-          [0.02, 0.085, 0.01, 0.045],
-          [-0.025, 0.10, -0.015, 0.038],
-          [0.005, 0.115, 0.025, 0.032],
-        ].map(([px, py, pz, r], i) => (
-          <mesh key={`lf-${i}`} position={[px, py, pz]}>
-            <sphereGeometry args={[r, 10, 10]} />
-            <meshStandardMaterial color={["#1c5e26", "#237030", "#1a5422"][i]} roughness={0.80} metalness={0.0} />
-          </mesh>
-        ))}
-      </group>
+      <RiserShelfCactus riserY={RISER} />
 
       {/* Notebook + pen */}
       <group position={[0.33, TOP + 0.032, -0.62]} rotation={[0, 0.18, 0]}>

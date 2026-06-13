@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useTexture } from "@react-three/drei";
-import { scaleWorldZ } from "@/lib/roomLayout";
+import { DEPTH_SCALE, scaleWorldZ } from "@/lib/roomLayout";
 
 const z = scaleWorldZ;
 
@@ -21,33 +21,35 @@ const z = scaleWorldZ;
  *   Left cluster (south edge): z = 5.26, 4.16, 3.06
  *   Right cluster (north edge): z = -3.06, -4.16, -5.26
  *
- * Poster size : 1.10 m wide (in z) × 1.60 m tall
- * Column gap  : 0 m (posters edge-to-edge)
- * Row gap     : 0.30 m
- * Row centres : y = 1.15 (bottom / eye level)  |  y = 3.05 (top)
+ * Poster size : 1.00 m wide (in z) × 1.48 m tall
+ * Column gap  : ~0.21 m world-space (30 % tighter than prior ~0.30 m)
+ * Row gap     : ~0.22 m
+ * Row centres : y = 1.35 (bottom / eye level)  |  y = 3.05 (top)
  *
  * Poster surface world x = -21.82 (0.09 m in front of inner wall face).
  * Frame sits 18 mm behind poster (local z = -0.018 → world -x).
  */
 
-const POSTER_W   = 1.1;   // world Z span after Y-rotation
-const POSTER_H   = 1.6;   // world Y span (unchanged)
-const FRAME_BORDER = 0.055;
+const POSTER_W   = 1.0;   // world Z span after Y-rotation
+const POSTER_H   = 1.48;  // world Y span (unchanged)
+const FRAME_BORDER = 0.05;
 const WALL_X     = -21.82; // world x of poster surface
 
-const COLUMN_GAP = 0;
-const COL_SPACING = POSTER_W + COLUMN_GAP;
+// Poster width is world-space; column centres are z-scaled (implicit ~0.30 m gap at POSTER_W spacing).
+const WORLD_COLUMN_GAP = POSTER_W * (DEPTH_SCALE - 1) * 0.7;
+const COL_SPACING = (POSTER_W + WORLD_COLUMN_GAP) / DEPTH_SCALE;
 
-// Left/south edge columns — southernmost poster ~0.10 m inside south wall
-const SOUTH_EDGE_Z = 5.26;
+// Edge columns — outer poster faces sit ~0.10 m inside wall ends
+const WALL_SOUTH_INNER_Z = 5.91 - 0.10;
+const WALL_NORTH_INNER_Z = -5.91 + 0.10;
+const SOUTH_EDGE_Z = WALL_SOUTH_INNER_Z - POSTER_W / 2;
 const LEFT_COLS = [
   SOUTH_EDGE_Z,
   SOUTH_EDGE_Z - COL_SPACING,
   SOUTH_EDGE_Z - COL_SPACING * 2,
 ].map(z) as [number, number, number];
 
-// Right/north edge columns — northernmost poster ~0.10 m inside north wall
-const NORTH_EDGE_Z = -5.26;
+const NORTH_EDGE_Z = WALL_NORTH_INNER_Z + POSTER_W / 2;
 const RIGHT_COLS = [
   NORTH_EDGE_Z + COL_SPACING * 2,
   NORTH_EDGE_Z + COL_SPACING,
@@ -55,7 +57,7 @@ const RIGHT_COLS = [
 ].map(z) as [number, number, number];
 
 // Row y-centres (bottom → top)
-const ROW_Y = [1.15, 3.05] as const;
+const ROW_Y = [1.35, 3.05] as const;
 
 /**
  * Left 6 posters stay on the left edge.
@@ -94,7 +96,7 @@ function PosterWallInner() {
     <group>
       {POSTERS.map((poster, i) => {
         const y = ROW_Y[poster.row];
-        const z = poster.colZ;
+        const colZ = poster.colZ;
 
         return (
           /**
@@ -106,7 +108,7 @@ function PosterWallInner() {
            */
           <group
             key={poster.src}
-            position={[WALL_X, y, z]}
+            position={[WALL_X, y, colZ]}
             rotation={[0, Math.PI / 2, 0]}
           >
             {/* Thin dark metal frame — offset 18 mm "into" the wall */}
