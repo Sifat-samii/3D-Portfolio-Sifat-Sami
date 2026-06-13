@@ -54,6 +54,15 @@ const ELECTRIC_GUITAR_YAW = -(5 * Math.PI) / 180;
 const ELECTRIC_GUITAR_LEAN = (5 * Math.PI) / 180;
 /** Extra space between the electric guitar stand and the amp (+Z / south). */
 const GUITAR_AMP_GAP_Z = 0.24;
+/** Monitor stand centre offset from desk centre (+Z / −Z) — clears desk edge (half-depth 1.0 m). */
+const MONITOR_STAND_Z = 1.48;
+/** Acoustic stand — extra clearance from desk (+X front, +Z south). */
+const ACOUSTIC_STAND_AWAY_X = 0.14;
+const ACOUSTIC_STAND_AWAY_Z = 0.24;
+/** Acoustic body seated on stand — same cradle offset as the electric. */
+const ACOUSTIC_GUITAR_OFFSET: [number, number, number] = [0.05, 0.20, 0];
+/** Acoustic stand yaw — 10° (viewed from above; was 30°, rotated back 20°). */
+const ACOUSTIC_GUITAR_YAW = (10 * Math.PI) / 180;
 
 export function StudioDesk() {
   return (
@@ -286,7 +295,7 @@ export function StudioDesk() {
              (proper listening triangle aimed at the chair)
          ═══════════════════════════════════════════════════════════ */}
 
-      {[-1.28, 1.28].map((oz, side) => {
+      {[-MONITOR_STAND_Z, MONITOR_STAND_Z].map((oz, side) => {
         // Toe-in: left (north) speaker yaws south-east, right yaws north-east
         const yaw = Math.PI / 2 + (side === 0 ? -0.30 : 0.30);
         return (
@@ -854,7 +863,14 @@ export function StudioDesk() {
       </group>
 
       {/* ── Acoustic guitar on stand (south end) ── */}
-      <group position={[0.30, 0, 1.62]} rotation={[0, -0.5, 0]}>
+      <group
+        position={[
+          0.30 + GUITAR_CORNER_AWAY_X + ACOUSTIC_STAND_AWAY_X,
+          0,
+          1.62 + ACOUSTIC_STAND_AWAY_Z,
+        ]}
+        rotation={[0, ACOUSTIC_GUITAR_YAW, 0]}
+      >
         {/* Stand legs */}
         {[-0.09, 0.09].map((lz) => (
           <mesh key={`asl-${lz}`} position={[0.02, 0.21, lz]} rotation={[lz < 0 ? 0.28 : -0.28, 0, 0.18]}>
@@ -866,8 +882,15 @@ export function StudioDesk() {
           <cylinderGeometry args={[0.008, 0.008, 0.52, 8]} />
           <meshStandardMaterial color={FRAME} metalness={0.60} roughness={0.32} />
         </mesh>
-        {/* Guitar leaning back */}
-        <group position={[0.05, 0, 0]} rotation={[0, 0, -0.14]}>
+        {/* Body cradle arms */}
+        {[-0.085, 0.085].map((cz) => (
+          <mesh key={`acr-${cz}`} position={[0.075, 0.10, cz]} rotation={[0, 0, 0.25]}>
+            <cylinderGeometry args={[0.007, 0.007, 0.13, 8]} />
+            <meshStandardMaterial color="#141210" roughness={0.85} metalness={0.10} />
+          </mesh>
+        ))}
+        {/* Guitar — same forward lean as the electric on its A-frame */}
+        <group position={ACOUSTIC_GUITAR_OFFSET} rotation={[0, 0, ELECTRIC_GUITAR_LEAN]}>
           {/* Lower bout */}
           <mesh position={[0.02, 0.22, 0]} rotation={[0, 0, Math.PI / 2]}>
             <cylinderGeometry args={[0.20, 0.20, 0.105, 22]} />

@@ -164,6 +164,25 @@ export function createRhoadsBodyGeometry() {
   return new THREE.ExtrudeGeometry(s, { ...EXTRUDE, depth: 0.038 });
 }
 
+/** Gibson-style symmetric Flying V — classic V wings. */
+export function createFlyingVBodyGeometry() {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0.10);
+  s.lineTo(-0.038, 0.10);
+  s.lineTo(-0.16, -0.04);
+  s.lineTo(-0.24, -0.30);
+  s.lineTo(-0.14, -0.34);
+  s.lineTo(-0.05, -0.15);
+  s.lineTo(0, -0.13);
+  s.lineTo(0.05, -0.15);
+  s.lineTo(0.14, -0.34);
+  s.lineTo(0.24, -0.30);
+  s.lineTo(0.16, -0.04);
+  s.lineTo(0.038, 0.10);
+  s.lineTo(0, 0.10);
+  return new THREE.ExtrudeGeometry(s, { ...EXTRUDE, depth: 0.036 });
+}
+
 /** Dean ML Razorback — sharp offset wings + center tail spike */
 export function createDeanMlBodyGeometry() {
   const s = new THREE.Shape();

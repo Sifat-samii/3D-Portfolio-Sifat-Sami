@@ -14,7 +14,6 @@ import { MediaWall } from "@/components/rooms/MediaWall";
 import { NorthWallBandPosters } from "@/components/rooms/NorthWallBandPosters";
 import { PedalDisplayRack } from "@/components/rooms/PedalDisplayRack";
 import { StudioDesk } from "@/components/rooms/StudioDesk";
-import { StudioFloorMat } from "@/components/rooms/StudioFloorMat";
 import { DrumKit } from "@/components/rooms/DrumKit";
 import { TvWatchCouch } from "@/components/rooms/TvWatchCouch";
 
@@ -154,7 +153,6 @@ export function MusicRoom() {
         <meshStandardMaterial color="#7a7672" roughness={0.97} metalness={0.0} />
       </mesh>
 
-      <StudioFloorMat />
       <DrumKit />
 
       <RoomLights roomId={room.id} position={room.position} />

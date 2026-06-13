@@ -10,6 +10,7 @@ import {
   SINGLE_DOTS,
   createDeanHeadGeometry,
   createDeanMlBodyGeometry,
+  createFlyingVBodyGeometry,
   createFretboardGeometry,
   createIbanezHeadGeometry,
   createJacksonHeadGeometry,
@@ -20,7 +21,7 @@ import {
   fbWidth,
 } from "@/lib/guitarShapes";
 
-export type GuitarShape = "rg" | "rhoads" | "deanMl";
+export type GuitarShape = "rg" | "rhoads" | "deanMl" | "flyingV";
 
 export type GuitarFinish = {
   body: string;
@@ -48,6 +49,8 @@ function bodyGeometryFor(shape: GuitarShape) {
   switch (shape) {
     case "rhoads":
       return createRhoadsBodyGeometry();
+    case "flyingV":
+      return createFlyingVBodyGeometry();
     case "deanMl":
       return createDeanMlBodyGeometry();
     default:
@@ -58,6 +61,7 @@ function bodyGeometryFor(shape: GuitarShape) {
 function headGeometryFor(shape: GuitarShape) {
   switch (shape) {
     case "rhoads":
+    case "flyingV":
       return createJacksonHeadGeometry();
     case "deanMl":
       return createDeanHeadGeometry();
