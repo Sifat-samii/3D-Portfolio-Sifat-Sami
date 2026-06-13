@@ -165,7 +165,9 @@ function HeadFront({ headFrontX, headY, headW, headH, scale, facing = "north" }:
 export function MarshallJvmFront(props: AmpFrontLayout) {
   return (
     <group>
-      <pointLight position={[props.cabFrontX - 0.4, props.cabY + props.cabH * 0.5, 0]} color="#ffe8c8" intensity={0.85} distance={2.5} decay={2} />
+      {props.showAccentLight !== false ? (
+        <pointLight position={[props.cabFrontX - 0.4, props.cabY + props.cabH * 0.5, 0]} color="#ffe8c8" intensity={0.85} distance={2.5} decay={2} />
+      ) : null}
       <CabinetFront {...props} />
       <HeadFront {...props} />
     </group>

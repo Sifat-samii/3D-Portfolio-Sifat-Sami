@@ -1,7 +1,9 @@
 "use client";
 
+import { RoundedBox } from "@react-three/drei";
 import { LEFT_POSTER_BOTTOM_Y, LEFT_POSTER_X } from "@/components/rooms/NorthWallBandPosters";
 import { scaleWorldZ } from "@/lib/roomLayout";
+import * as THREE from "three";
 
 /**
  * Twin open-front pedal display racks under the left (KARMAN) poster.
@@ -26,12 +28,37 @@ const RACK_H = Math.min(1.42, LEFT_POSTER_BOTTOM_Y - FLOOR_Y - 0.22);
 const SHELF_COUNT = 6;
 /** Steeper tilt so pedal faces aim into the room. */
 const SHELF_TILT = 0.26;
+const TOP_SHELF_TILT = 0.18;
 const TUBE = 0.022;
 /** Uniform scale bump for all stompboxes. */
 const PEDAL_SCALE = 1.32;
 
 const WALL_Z = scaleWorldZ(-5.88);
 const RACK_Z = WALL_Z + RACK_D / 2 + 0.02;
+
+const frameMat = new THREE.MeshStandardMaterial({
+  color: FRAME,
+  metalness: 0.64,
+  roughness: 0.36,
+});
+
+const meshMat = new THREE.MeshStandardMaterial({
+  color: MESH,
+  roughness: 0.84,
+  metalness: 0.34,
+});
+
+const plinthMat = new THREE.MeshStandardMaterial({
+  color: "#1a1612",
+  metalness: 0.58,
+  roughness: 0.36,
+});
+
+const backMat = new THREE.MeshStandardMaterial({
+  color: "#0e0c0a",
+  roughness: 0.9,
+  metalness: 0.14,
+});
 
 type PedalSpec = {
   w: number;
@@ -61,31 +88,29 @@ function OpenDisplayShelf({ y }: { y: number }) {
 
   return (
     <group position={[0, y, 0]} rotation={[SHELF_TILT, 0, 0]}>
-      {/* Cantilever tray — shallow, sits under pedals */}
-      <mesh position={[0, -0.005, innerD * 0.08]}>
-        <boxGeometry args={[innerW, 0.01, innerD * 0.72]} />
-        <meshStandardMaterial color={MESH} roughness={0.86} metalness={0.32} />
-      </mesh>
-      {/* Low front lip only — does not block pedal faces */}
-      <mesh position={[0, 0.008, frontZ]}>
-        <boxGeometry args={[innerW, 0.016, 0.01]} />
-        <meshStandardMaterial color={FRAME} metalness={0.58} roughness={0.4} />
-      </mesh>
-      {/* Sparse wire rungs (open mesh) */}
+      <RoundedBox
+        args={[innerW, 0.01, innerD * 0.72]}
+        radius={0.003}
+        smoothness={6}
+        position={[0, -0.005, innerD * 0.08]}
+        material={meshMat}
+      />
+      <RoundedBox
+        args={[innerW, 0.014, 0.01]}
+        radius={0.003}
+        smoothness={6}
+        position={[0, 0.008, frontZ]}
+        material={frameMat}
+      />
       {Array.from({ length: 5 }, (_, i) => {
         const ox = -innerW / 2 + 0.08 + i * ((innerW - 0.16) / 4);
         return (
           <mesh key={`wg-${i}`} position={[ox, 0.001, innerD * 0.05]}>
             <boxGeometry args={[0.003, 0.003, innerD * 0.55]} />
-            <meshStandardMaterial color="#111" metalness={0.45} roughness={0.55} />
+            <meshStandardMaterial color="#111" metalness={0.48} roughness={0.52} />
           </mesh>
         );
       })}
-      {/* Under-shelf accent — helps read pedal silhouettes */}
-      <mesh position={[0, -0.018, frontZ - 0.04]}>
-        <boxGeometry args={[innerW - 0.06, 0.004, 0.012]} />
-        <meshStandardMaterial color="#ffdcb0" emissive="#ffdcb0" emissiveIntensity={0.35} />
-      </mesh>
     </group>
   );
 }
@@ -95,30 +120,32 @@ function StompPedal({ spec }: { spec: PedalSpec }) {
 
   return (
     <group position={[spec.x, spec.h / 2 + 0.018, forwardZ]}>
-      <mesh>
-        <boxGeometry args={[spec.w, spec.h, spec.d]} />
-        <meshStandardMaterial color={spec.color} roughness={0.48} metalness={0.28} />
-      </mesh>
-      {/* Beveled top highlight */}
+      <RoundedBox
+        args={[spec.w, spec.h, spec.d]}
+        radius={0.012}
+        smoothness={8}
+        castShadow
+      >
+        <meshStandardMaterial color={spec.color} roughness={0.44} metalness={0.3} />
+      </RoundedBox>
       <mesh position={[0, spec.h / 2 + 0.002, -spec.d * 0.05]} rotation={[-0.08, 0, 0]}>
-        <boxGeometry args={[spec.w * 0.94, 0.003, spec.d * 0.9]} />
-        <meshStandardMaterial color="#4a4640" roughness={0.28} metalness={0.42} />
+        <boxGeometry args={[spec.w * 0.92, 0.003, spec.d * 0.88]} />
+        <meshStandardMaterial color="#4a4640" roughness={0.26} metalness={0.44} />
       </mesh>
-      {/* Footswitch — visible from room */}
       <mesh position={[0, spec.h / 2 + 0.012, spec.d * 0.22]}>
-        <cylinderGeometry args={[spec.w * 0.14, spec.w * 0.14, 0.016, 12]} />
-        <meshStandardMaterial color="#d4ccc0" metalness={0.72} roughness={0.22} />
+        <cylinderGeometry args={[spec.w * 0.14, spec.w * 0.14, 0.016, 16]} />
+        <meshStandardMaterial color="#d4ccc0" metalness={0.74} roughness={0.2} />
       </mesh>
       {spec.knob !== false ? (
         <>
           <mesh position={[0, spec.h / 2 + 0.014, -spec.d * 0.12]}>
-            <cylinderGeometry args={[0.018, 0.018, 0.016, 10]} />
-            <meshStandardMaterial color="#c8c0b0" metalness={0.68} roughness={0.26} />
+            <cylinderGeometry args={[0.018, 0.018, 0.016, 12]} />
+            <meshStandardMaterial color="#c8c0b0" metalness={0.7} roughness={0.24} />
           </mesh>
           {[-0.028, 0.028].map((kz) => (
             <mesh key={kz} position={[-spec.w * 0.22, spec.h / 2 + 0.01, kz]}>
-              <cylinderGeometry args={[0.01, 0.01, 0.014, 8]} />
-              <meshStandardMaterial color="#1a1a1a" metalness={0.42} roughness={0.42} />
+              <cylinderGeometry args={[0.01, 0.01, 0.014, 10]} />
+              <meshStandardMaterial color="#1a1a1a" metalness={0.44} roughness={0.4} />
             </mesh>
           ))}
         </>
@@ -126,12 +153,12 @@ function StompPedal({ spec }: { spec: PedalSpec }) {
       {spec.accent ? (
         <mesh position={[spec.w * 0.34, spec.h / 2 + 0.01, spec.d * 0.08]}>
           <boxGeometry args={[0.009, 0.009, 0.009]} />
-          <meshStandardMaterial color="#0a0a0a" emissive={spec.accent} emissiveIntensity={2.2} />
+          <meshStandardMaterial color="#0a0a0a" emissive={spec.accent} emissiveIntensity={1.6} />
         </mesh>
       ) : null}
       <mesh position={[-spec.w / 2 - 0.005, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.005, 0.005, 0.012, 6]} />
-        <meshStandardMaterial color={FRAME} metalness={0.7} roughness={0.3} />
+        <cylinderGeometry args={[0.005, 0.005, 0.012, 8]} />
+        <meshStandardMaterial color={FRAME} metalness={0.72} roughness={0.28} />
       </mesh>
     </group>
   );
@@ -177,6 +204,26 @@ function shelfLayouts(rackIndex: 0 | 1): PedalSpec[][] {
   return raw.map((row) => row.map(scalePedal));
 }
 
+function topShelfLayouts(rackIndex: 0 | 1): PedalSpec[] {
+  const shift = rackIndex === 0 ? 0 : 0.02;
+  const s = (x: number) => x * (rackIndex === 0 ? 1 : 0.94) + (rackIndex === 1 ? shift : 0);
+
+  const raw: PedalSpec[] =
+    rackIndex === 0
+      ? [
+          { w: 0.18, h: 0.06, d: 0.16, x: s(-0.14), color: "#2a2a2a", accent: "#22d3ee" },
+          { w: 0.11, h: 0.054, d: 0.11, x: s(0.04), color: "#7c2d12", accent: "#fb923c" },
+          { w: 0.11, h: 0.054, d: 0.11, x: s(0.2), color: "#1e3a8a", accent: "#60a5fa" },
+        ]
+      : [
+          { w: 0.14, h: 0.058, d: 0.13, x: s(-0.13), color: "#b45309", accent: "#fcd34d" },
+          { w: 0.2, h: 0.064, d: 0.18, x: s(0.02), color: "#262626", accent: "#fbbf24" },
+          { w: 0.1, h: 0.054, d: 0.1, x: s(0.2), color: "#450a0a", accent: "#f87171" },
+        ];
+
+  return raw.map(scalePedal);
+}
+
 function ShelfPedals({ shelfIndex, y, rackIndex }: { shelfIndex: number; y: number; rackIndex: 0 | 1 }) {
   const layouts = shelfLayouts(rackIndex);
   const pedals = layouts[shelfIndex] ?? layouts[1];
@@ -187,6 +234,49 @@ function ShelfPedals({ shelfIndex, y, rackIndex }: { shelfIndex: number; y: numb
         <StompPedal key={`${rackIndex}-${shelfIndex}-${i}`} spec={spec} />
       ))}
     </group>
+  );
+}
+
+function TopShelfPedals({ rackIndex }: { rackIndex: 0 | 1 }) {
+  const pedals = topShelfLayouts(rackIndex);
+  const halfD = RACK_D / 2;
+
+  return (
+    <group position={[0, RACK_H + 0.075, halfD * 0.12]} rotation={[TOP_SHELF_TILT, 0, 0]}>
+      <RoundedBox
+        args={[RACK_W - 0.08, 0.012, RACK_D * 0.52]}
+        radius={0.004}
+        smoothness={8}
+        position={[0, 0, 0]}
+        material={meshMat}
+      />
+      <RoundedBox
+        args={[RACK_W - 0.08, 0.014, 0.01]}
+        radius={0.003}
+        smoothness={6}
+        position={[0, 0.008, RACK_D * 0.24]}
+        material={frameMat}
+      />
+      {pedals.map((spec, i) => (
+        <StompPedal key={`top-${rackIndex}-${i}`} spec={spec} />
+      ))}
+    </group>
+  );
+}
+
+function RackPost({
+  lx,
+  lz,
+  h,
+}: {
+  lx: number;
+  lz: number;
+  h: number;
+}) {
+  return (
+    <mesh position={[lx, h / 2 + 0.04, lz]} material={frameMat} castShadow>
+      <cylinderGeometry args={[TUBE, TUBE, h, 12]} />
+    </mesh>
   );
 }
 
@@ -204,50 +294,41 @@ function PedalRackUnit({ rackIndex }: { rackIndex: 0 | 1 }) {
 
   return (
     <group>
-      {/* Plinth — deeper footprint */}
-      <mesh position={[0, 0.05, 0.04]}>
-        <boxGeometry args={[RACK_W, 0.07, RACK_D]} />
-        <meshStandardMaterial color="#1a1612" metalness={0.55} roughness={0.38} />
-      </mesh>
+      <RoundedBox
+        args={[RACK_W, 0.07, RACK_D]}
+        radius={0.018}
+        smoothness={8}
+        position={[0, 0.05, 0.04]}
+        material={plinthMat}
+        castShadow
+      />
 
-      {/* Back panel only — open front */}
-      <mesh position={[0, RACK_H / 2 + 0.04, backZ]}>
+      <mesh position={[0, RACK_H / 2 + 0.04, backZ]} material={backMat}>
         <boxGeometry args={[RACK_W - 0.02, RACK_H, 0.01]} />
-        <meshStandardMaterial color="#0e0c0a" roughness={0.92} metalness={0.15} />
       </mesh>
 
-      {/* Rear side cheeks — front stays open */}
       {[-halfW + 0.01, halfW - 0.01].map((lx) => (
         <mesh key={`cheek-${lx}`} position={[lx, RACK_H / 2 + 0.04, backZ + RACK_D * 0.22]}>
           <boxGeometry args={[0.012, RACK_H, RACK_D * 0.44]} />
-          <meshStandardMaterial color="#12100e" roughness={0.88} metalness={0.2} />
+          <meshStandardMaterial color="#12100e" roughness={0.86} metalness={0.22} />
         </mesh>
       ))}
 
-      {/* Corner posts — tall at back, short at front (display frame) */}
-      {[
-        [-halfW + 0.028, backZ + 0.02, RACK_H],
-        [halfW - 0.028, backZ + 0.02, RACK_H],
-        [-halfW + 0.028, halfD - 0.04, RACK_H * 0.42],
-        [halfW - 0.028, halfD - 0.04, RACK_H * 0.42],
-      ].map(([lx, lz, h], i) => (
-        <mesh key={`post-${i}`} position={[lx, h / 2 + 0.04, lz]}>
-          <boxGeometry args={[TUBE, h, TUBE]} />
-          <meshStandardMaterial color={FRAME} metalness={0.64} roughness={0.36} />
-        </mesh>
-      ))}
+      <RackPost lx={-halfW + 0.028} lz={backZ + 0.02} h={RACK_H} />
+      <RackPost lx={halfW - 0.028} lz={backZ + 0.02} h={RACK_H} />
+      <RackPost lx={-halfW + 0.028} lz={halfD - 0.04} h={RACK_H * 0.42} />
+      <RackPost lx={halfW - 0.028} lz={halfD - 0.04} h={RACK_H * 0.42} />
 
-      {/* Top rail — set toward back so front pedals stay clear */}
-      <mesh position={[0, RACK_H + 0.05, backZ + RACK_D * 0.18]}>
+      <mesh position={[0, RACK_H + 0.05, backZ + RACK_D * 0.18]} material={frameMat}>
         <boxGeometry args={[RACK_W, TUBE, RACK_D * 0.36]} />
-        <meshStandardMaterial color={FRAME} metalness={0.62} roughness={0.38} />
+      </mesh>
+      <mesh position={[0, RACK_H + 0.05, halfD - 0.05]} material={frameMat}>
+        <boxGeometry args={[RACK_W - 0.04, TUBE, TUBE]} />
       </mesh>
 
-      {/* Rear cross-braces */}
       {braceHeights.map((by) => (
-        <mesh key={`brace-${by}`} position={[0, by, backZ]}>
+        <mesh key={`brace-${by}`} position={[0, by, backZ]} material={frameMat}>
           <boxGeometry args={[RACK_W - 0.06, 0.01, 0.01]} />
-          <meshStandardMaterial color={FRAME} metalness={0.55} roughness={0.42} />
         </mesh>
       ))}
 
@@ -257,6 +338,8 @@ function PedalRackUnit({ rackIndex }: { rackIndex: 0 | 1 }) {
           <ShelfPedals shelfIndex={i} y={y} rackIndex={rackIndex} />
         </group>
       ))}
+
+      <TopShelfPedals rackIndex={rackIndex} />
     </group>
   );
 }
@@ -272,7 +355,6 @@ export function PedalDisplayRack() {
       <group position={[offsetX, 0, 0]}>
         <PedalRackUnit rackIndex={1} />
       </group>
-      <pointLight position={[0, RACK_H * 0.55, RACK_D * 0.55]} color="#ffe8c8" intensity={0.72} distance={3.2} decay={2} />
     </group>
   );
 }

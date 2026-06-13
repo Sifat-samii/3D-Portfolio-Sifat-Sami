@@ -287,9 +287,6 @@ export function StudioDesk() {
         <meshStandardMaterial color={FRAME} metalness={0.6} roughness={0.3} />
       </mesh>
 
-      {/* Screen glow wash */}
-      <pointLight position={[0.35, RISER + 0.45, 0]} color="#b8ccff" intensity={1.1} distance={3.0} decay={2} />
-
       {/* ═══════════════════════════════════════════════════════════
           3. STUDIO MONITORS — isolation floor stands, toed-in
              (proper listening triangle aimed at the chair)
@@ -1001,24 +998,6 @@ export function StudioDesk() {
           </group>
         ))}
       </group>
-
-      {/* ═══════════════════════════════════════════════════════════
-          12. LIGHTING — subtle LED underglow + riser backlight
-         ═══════════════════════════════════════════════════════════ */}
-
-      {/* Under-desk strip (subtle warm white — no RGB overload) */}
-      <mesh position={[0.428, TOP - 0.045, 0]}>
-        <boxGeometry args={[0.008, 0.008, 1.96]} />
-        <meshStandardMaterial color="#0c0b08" emissive="#d8b048" emissiveIntensity={0.85} roughness={0.4} />
-      </mesh>
-      <pointLight position={[0.55, TOP - 0.15, 0]} color="#caa040" intensity={0.7} distance={2.0} decay={2} />
-
-      {/* Behind-riser wall-wash strip */}
-      <mesh position={[-0.44, TOP + 0.30, 0]}>
-        <boxGeometry args={[0.006, 0.006, 1.42]} />
-        <meshStandardMaterial color="#0c0b08" emissive="#e8c060" emissiveIntensity={1.1} roughness={0.4} />
-      </mesh>
-      <pointLight position={[-0.50, TOP + 0.45, 0]} color="#d4a840" intensity={0.85} distance={2.2} decay={2} />
 
     </group>
   );

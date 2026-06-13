@@ -1,6 +1,8 @@
 "use client";
 
+import { RoundedBox } from "@react-three/drei";
 import { scaleWorldZ } from "@/lib/roomLayout";
+import * as THREE from "three";
 
 /**
  * Media wall — big LED TV + HiFi sound system, centre of the north wall.
@@ -10,228 +12,326 @@ import { scaleWorldZ } from "@/lib/roomLayout";
  *   TV : 4.40 m × 2.48 m (16:9) screen, centre y = 2.30 — screen OFF (black)
  *   Below: 3.6 m media console + 2.9 m soundbar + 0.75 m subwoofer
  *   Sides: two floor-standing HiFi towers (≈ 2.3 m tall) at CX ± 3.0
- *
- * Clearance notes:
- *   • Stage platform sits at z -6.0..-4.8 — console (z ≈ -6.6) tucks behind it
- *   • Guitar display is at x = -9.2 — right tower edge (-11.2) keeps clear
  */
 
 const CX = -14.5;
-const WZ = -6.88;   // wall inner face
+const WZ = -6.88;
 
-const TV_CY = 2.30; // tv centre height
-const TV_W = 4.40;  // screen width  (16:9)
-const TV_H = 2.48;  // screen height
+const TV_CY = 2.30;
+const TV_W = 4.40;
+const TV_H = 2.48;
 
-const CABINET = "#16130f"; // dark walnut-black furniture
-const METAL   = "#1a1816";
-const GRILLE  = "#0e0e10";
+const CABINET = "#12100e";
+const METAL = "#1c1a18";
+const GRILLE = "#0a0a0c";
+const BAFFLE = "#1a1816";
+const BRASS = "#8a7040";
 
 const MEDIA_GROUP_Z = scaleWorldZ(-5.88) - WZ;
 
-export function MediaWall() {
-  return (
-    <group position={[0, 0, MEDIA_GROUP_Z]}>
-      {/* ════════════════════════ LED TV ════════════════════════ */}
+const cabinetMat = new THREE.MeshStandardMaterial({
+  color: CABINET,
+  roughness: 0.68,
+  metalness: 0.06,
+});
 
-      {/* Wall mount plate */}
+const metalMat = new THREE.MeshStandardMaterial({
+  color: METAL,
+  metalness: 0.72,
+  roughness: 0.32,
+});
+
+const grilleMat = new THREE.MeshStandardMaterial({
+  color: GRILLE,
+  roughness: 0.92,
+  metalness: 0.04,
+});
+
+const baffleMat = new THREE.MeshStandardMaterial({
+  color: BAFFLE,
+  roughness: 0.62,
+  metalness: 0.08,
+});
+
+const brassMat = new THREE.MeshStandardMaterial({
+  color: BRASS,
+  metalness: 0.88,
+  roughness: 0.28,
+});
+
+const surroundMat = new THREE.MeshStandardMaterial({
+  color: "#1e1e22",
+  roughness: 0.78,
+  metalness: 0.05,
+});
+
+const coneMat = new THREE.MeshStandardMaterial({
+  color: "#141418",
+  roughness: 0.82,
+  metalness: 0.02,
+});
+
+const capMat = new THREE.MeshStandardMaterial({
+  color: "#2a2a30",
+  roughness: 0.48,
+  metalness: 0.28,
+});
+
+const tweeterMat = new THREE.MeshStandardMaterial({
+  color: "#222228",
+  metalness: 0.55,
+  roughness: 0.34,
+});
+
+const screenMat = new THREE.MeshPhysicalMaterial({
+  color: "#010102",
+  roughness: 0.04,
+  metalness: 0.65,
+  clearcoat: 0.35,
+  clearcoatRoughness: 0.08,
+  reflectivity: 0.9,
+});
+
+const bezelMat = new THREE.MeshStandardMaterial({
+  color: "#0e0e10",
+  metalness: 0.55,
+  roughness: 0.22,
+});
+
+type DriverProps = {
+  radius: number;
+  surround: number;
+  cap?: number;
+  segments?: number;
+  tweeter?: boolean;
+};
+
+/** Layered driver — rubber surround, cone, dust cap. */
+function SpeakerDriver({
+  position,
+  radius,
+  surround,
+  cap = radius * 0.36,
+  segments = 32,
+  tweeter = false,
+}: DriverProps & { position: [number, number, number] }) {
+  if (tweeter) {
+    return (
+      <group position={position}>
+        <mesh rotation={[0, 0, 0]} material={tweeterMat}>
+          <torusGeometry args={[radius * 0.82, surround, 10, segments]} />
+        </mesh>
+        <mesh position={[0, 0, 0.003]} material={tweeterMat}>
+          <circleGeometry args={[radius * 0.62, segments]} />
+        </mesh>
+      </group>
+    );
+  }
+
+  return (
+    <group position={position}>
+      <mesh material={surroundMat}>
+        <torusGeometry args={[radius * 0.88, surround, 10, segments]} />
+      </mesh>
+      <mesh position={[0, 0, 0.003]} material={coneMat}>
+        <circleGeometry args={[radius * 0.78, segments]} />
+      </mesh>
+      <mesh position={[0, 0, 0.006]} material={capMat}>
+        <circleGeometry args={[cap, Math.max(14, segments - 8)]} />
+      </mesh>
+    </group>
+  );
+}
+
+function LedTv() {
+  const screenZ = WZ + 0.092;
+  const bodyZ = WZ + 0.058;
+
+  return (
+    <group>
       <mesh position={[CX, TV_CY, WZ + 0.012]}>
         <boxGeometry args={[1.1, 0.6, 0.024]} />
         <meshStandardMaterial color={METAL} metalness={0.7} roughness={0.35} />
       </mesh>
 
-      {/* Faint warm LED backlight halo behind the panel */}
-      <mesh position={[CX, TV_CY, WZ + 0.030]}>
-        <boxGeometry args={[TV_W + 0.24, TV_H + 0.24, 0.01]} />
+      <mesh position={[CX, TV_CY, WZ + 0.028]}>
+        <boxGeometry args={[TV_W + 0.18, TV_H + 0.18, 0.008]} />
         <meshStandardMaterial
-          color="#0c0a08"
-          emissive="#c8960c"
-          emissiveIntensity={0.30}
-          roughness={0.6}
+          color="#080604"
+          emissive="#2a1e10"
+          emissiveIntensity={0.06}
+          roughness={0.85}
         />
       </mesh>
 
-      {/* TV body / bezel */}
-      <mesh position={[CX, TV_CY, WZ + 0.062]}>
-        <boxGeometry args={[TV_W + 0.06, TV_H + 0.06, 0.055]} />
-        <meshStandardMaterial color="#050505" metalness={0.45} roughness={0.35} />
+      <RoundedBox
+        args={[TV_W + 0.048, TV_H + 0.048, 0.042]}
+        radius={0.012}
+        smoothness={10}
+        position={[CX, TV_CY, bodyZ]}
+        material={bezelMat}
+        castShadow
+      />
+
+      <mesh position={[CX, TV_CY, screenZ]} material={screenMat}>
+        <planeGeometry args={[TV_W - 0.02, TV_H - 0.02]} />
       </mesh>
 
-      {/* Screen panel — switched off: black glass, faint reflective sheen */}
-      <mesh position={[CX, TV_CY, WZ + 0.0925]}>
-        <planeGeometry args={[TV_W, TV_H]} />
+      <mesh position={[CX, TV_CY + TV_H / 2 - 0.018, screenZ + 0.002]}>
+        <planeGeometry args={[TV_W * 0.35, 0.004]} />
         <meshStandardMaterial
-          color="#020203"
-          roughness={0.08}
-          metalness={0.55}
+          color="#ffffff"
+          transparent
+          opacity={0.04}
+          roughness={0.1}
+          metalness={0}
+          depthWrite={false}
         />
       </mesh>
 
-      {/* Brand strip under the screen */}
-      <mesh position={[CX, TV_CY - TV_H / 2 - 0.060, WZ + 0.095]}>
-        <boxGeometry args={[0.40, 0.032, 0.008]} />
-        <meshStandardMaterial color="#2a2a2a" metalness={0.75} roughness={0.25} />
+      <mesh position={[CX, TV_CY - TV_H / 2 - 0.052, screenZ + 0.002]}>
+        <boxGeometry args={[0.34, 0.024, 0.006]} />
+        <meshStandardMaterial color="#2a2a2e" metalness={0.78} roughness={0.22} />
       </mesh>
 
-      {/* Standby LED */}
-      <mesh position={[CX, TV_CY - TV_H / 2 - 0.060, WZ + 0.100]}>
-        <boxGeometry args={[0.02, 0.012, 0.006]} />
+      <mesh position={[CX + 0.12, TV_CY - TV_H / 2 - 0.052, screenZ + 0.006]}>
+        <boxGeometry args={[0.014, 0.01, 0.004]} />
         <meshStandardMaterial
           color="#0a0a0a"
-          emissive="#ff3020"
-          emissiveIntensity={2.0}
+          emissive="#cc2018"
+          emissiveIntensity={0.8}
           roughness={0.3}
         />
       </mesh>
+    </group>
+  );
+}
 
-      {/* ════════════════════════ MEDIA CONSOLE ════════════════════════ */}
-
-      {/* Cabinet body */}
-      <mesh position={[CX, 0.40, -6.62]}>
-        <boxGeometry args={[3.6, 0.56, 0.48]} />
-        <meshStandardMaterial color={CABINET} roughness={0.72} metalness={0.06} />
+function SoundbarUnit() {
+  return (
+    <group position={[CX, 0.8, -6.56]}>
+      <RoundedBox args={[2.9, 0.15, 0.14]} radius={0.038} smoothness={10} material={grilleMat} castShadow />
+      {[-1.42, 1.42].map((ox) => (
+        <RoundedBox
+          key={`cap-${ox}`}
+          args={[0.07, 0.155, 0.145]}
+          radius={0.02}
+          smoothness={8}
+          position={[ox, 0, 0]}
+          material={metalMat}
+        />
+      ))}
+      {[-0.9, -0.3, 0.3, 0.9].map((ox) => (
+        <mesh key={`sb-${ox}`} position={[ox, 0, 0.072]}>
+          <circleGeometry args={[0.028, 20]} />
+          <meshStandardMaterial color="#18181c" roughness={0.75} metalness={0.08} />
+        </mesh>
+      ))}
+      <mesh position={[1.3, 0, 0.075]}>
+        <boxGeometry args={[0.014, 0.014, 0.006]} />
+        <meshStandardMaterial color="#0a0a0a" emissive="#22c858" emissiveIntensity={1.2} roughness={0.3} />
       </mesh>
-      {/* Cabinet top slab */}
+    </group>
+  );
+}
+
+function SubwooferUnit() {
+  return (
+    <group position={[CX + 2.3, 0.5, -6.5]}>
+      <RoundedBox args={[0.75, 0.75, 0.75]} radius={0.04} smoothness={10} material={cabinetMat} castShadow />
+      <mesh position={[0, 0, 0.378]} material={baffleMat}>
+        <boxGeometry args={[0.58, 0.58, 0.012]} />
+      </mesh>
+      <SpeakerDriver position={[0, 0, 0.39]} radius={0.26} surround={0.016} cap={0.09} />
+    </group>
+  );
+}
+
+function TowerSpeaker({ offsetX }: { offsetX: number }) {
+  const frontZ = 0.262;
+
+  return (
+    <group position={[CX + offsetX, 0, -6.46]}>
+      <RoundedBox args={[0.66, 0.08, 0.6]} radius={0.018} smoothness={8} position={[0, 0.16, 0]} material={metalMat} />
+
+      <RoundedBox
+        args={[0.54, 2.04, 0.48]}
+        radius={0.035}
+        smoothness={10}
+        position={[0, 1.22, 0]}
+        material={cabinetMat}
+        castShadow
+      />
+
+      <mesh position={[0, 1.22, 0.242]}>
+        <boxGeometry args={[0.46, 1.96, 0.01]} />
+        <meshStandardMaterial color={GRILLE} roughness={0.94} metalness={0.03} transparent opacity={0.92} />
+      </mesh>
+
+      <mesh position={[0, 1.22, 0.248]} material={baffleMat}>
+        <boxGeometry args={[0.44, 1.9, 0.008]} />
+      </mesh>
+
+      <SpeakerDriver position={[0, 2.04, frontZ]} radius={0.055} surround={0.006} tweeter />
+      <SpeakerDriver position={[0, 1.74, frontZ]} radius={0.105} surround={0.011} cap={0.038} />
+      <SpeakerDriver position={[0, 1.3, frontZ]} radius={0.16} surround={0.014} cap={0.058} />
+      <SpeakerDriver position={[0, 0.8, frontZ]} radius={0.16} surround={0.014} cap={0.058} />
+
+      <RoundedBox
+        args={[0.54, 0.022, 0.48]}
+        radius={0.008}
+        smoothness={8}
+        position={[0, 2.3, 0]}
+        material={brassMat}
+      />
+    </group>
+  );
+}
+
+function MediaConsole() {
+  return (
+    <group>
+      <RoundedBox
+        args={[3.6, 0.56, 0.48]}
+        radius={0.02}
+        smoothness={8}
+        position={[CX, 0.4, -6.62]}
+        material={cabinetMat}
+        castShadow
+      />
       <mesh position={[CX, 0.695, -6.62]}>
         <boxGeometry args={[3.74, 0.035, 0.54]} />
-        <meshStandardMaterial color="#241a10" roughness={0.55} metalness={0.10} />
+        <meshStandardMaterial color="#241a10" roughness={0.55} metalness={0.1} />
       </mesh>
-      {/* Two front doors (slightly proud, darker) */}
       {[-0.88, 0.88].map((ox) => (
-        <mesh key={`door-${ox}`} position={[CX + ox, 0.40, -6.375]}>
+        <mesh key={`door-${ox}`} position={[CX + ox, 0.4, -6.375]}>
           <boxGeometry args={[1.66, 0.44, 0.018]} />
           <meshStandardMaterial color="#0f0c09" roughness={0.65} metalness={0.08} />
         </mesh>
       ))}
-      {/* AV receiver glow slit between the doors */}
       <mesh position={[CX, 0.46, -6.372]}>
-        <boxGeometry args={[0.30, 0.025, 0.012]} />
-        <meshStandardMaterial
-          color="#0a0a0a"
-          emissive="#ffb030"
-          emissiveIntensity={1.8}
-          roughness={0.3}
-        />
+        <boxGeometry args={[0.3, 0.025, 0.012]} />
+        <meshStandardMaterial color="#0a0a0a" emissive="#ffb030" emissiveIntensity={1.2} roughness={0.3} />
       </mesh>
-      {/* Cabinet feet */}
-      {[-1.70, 1.70].map((ox) => (
+      {[-1.7, 1.7].map((ox) => (
         <mesh key={`foot-${ox}`} position={[CX + ox, 0.16, -6.62]}>
-          <boxGeometry args={[0.08, 0.10, 0.40]} />
+          <boxGeometry args={[0.08, 0.1, 0.4]} />
           <meshStandardMaterial color={METAL} metalness={0.6} roughness={0.4} />
         </mesh>
       ))}
+    </group>
+  );
+}
 
-      {/* ════════════════════════ SOUNDBAR ════════════════════════ */}
-
-      <mesh position={[CX, 0.80, -6.56]}>
-        <boxGeometry args={[2.9, 0.16, 0.15]} />
-        <meshStandardMaterial color={GRILLE} roughness={0.85} metalness={0.10} />
-      </mesh>
-      {/* Soundbar end caps */}
-      {[-1.42, 1.42].map((ox) => (
-        <mesh key={`cap-${ox}`} position={[CX + ox, 0.80, -6.56]}>
-          <boxGeometry args={[0.07, 0.165, 0.155]} />
-          <meshStandardMaterial color={METAL} metalness={0.65} roughness={0.30} />
-        </mesh>
-      ))}
-      {/* Power LED */}
-      <mesh position={[CX + 1.30, 0.80, -6.48]}>
-        <boxGeometry args={[0.018, 0.018, 0.008]} />
-        <meshStandardMaterial
-          color="#0a0a0a"
-          emissive="#30ff80"
-          emissiveIntensity={2.5}
-          roughness={0.3}
-        />
-      </mesh>
-
-      {/* ════════════════════════ SUBWOOFER ════════════════════════ */}
-
-      <mesh position={[CX + 2.30, 0.50, -6.50]}>
-        <boxGeometry args={[0.75, 0.75, 0.75]} />
-        <meshStandardMaterial color={CABINET} roughness={0.78} metalness={0.05} />
-      </mesh>
-      {/* Front driver */}
-      <mesh position={[CX + 2.30, 0.50, -6.118]}>
-        <circleGeometry args={[0.26, 26]} />
-        <meshStandardMaterial
-          color="#16161a"
-          emissive="#c8960c"
-          emissiveIntensity={0.18}
-          roughness={0.8}
-        />
-      </mesh>
-      <mesh position={[CX + 2.30, 0.50, -6.110]}>
-        <circleGeometry args={[0.095, 16]} />
-        <meshStandardMaterial color="#26262c" roughness={0.5} metalness={0.3} />
-      </mesh>
-
-      {/* ════════════════ HIFI TOWER SPEAKERS (L + R) ════════════════ */}
-
-      {[-3.0, 3.0].map((ox) => (
-        <group key={`tower-${ox}`} position={[CX + ox, 0, -6.46]}>
-          {/* Plinth base */}
-          <mesh position={[0, 0.16, 0]}>
-            <boxGeometry args={[0.66, 0.08, 0.60]} />
-            <meshStandardMaterial color={METAL} metalness={0.6} roughness={0.35} />
-          </mesh>
-          {/* Tower body */}
-          <mesh position={[0, 1.25, 0]}>
-            <boxGeometry args={[0.56, 2.10, 0.50]} />
-            <meshStandardMaterial color={CABINET} roughness={0.72} metalness={0.06} />
-          </mesh>
-          {/* Front grille face */}
-          <mesh position={[0, 1.25, 0.253]}>
-            <boxGeometry args={[0.48, 2.00, 0.012]} />
-            <meshStandardMaterial color={GRILLE} roughness={0.90} metalness={0.05} />
-          </mesh>
-          {/* Tweeter */}
-          <mesh position={[0, 2.06, 0.262]}>
-            <circleGeometry args={[0.055, 16]} />
-            <meshStandardMaterial color="#30303a" metalness={0.55} roughness={0.35} />
-          </mesh>
-          {/* Mid driver */}
-          <mesh position={[0, 1.76, 0.262]}>
-            <circleGeometry args={[0.105, 20]} />
-            <meshStandardMaterial
-              color="#1a1a20"
-              emissive="#c8960c"
-              emissiveIntensity={0.15}
-              roughness={0.75}
-            />
-          </mesh>
-          {/* Two woofers */}
-          {[1.32, 0.82].map((y) => (
-            <mesh key={`woof-${y}`} position={[0, y, 0.262]}>
-              <circleGeometry args={[0.16, 26]} />
-              <meshStandardMaterial
-                color="#16161a"
-                emissive="#c8960c"
-                emissiveIntensity={0.18}
-                roughness={0.8}
-              />
-            </mesh>
-          ))}
-          {/* Woofer dust caps */}
-          {[1.32, 0.82].map((y) => (
-            <mesh key={`cap-${y}`} position={[0, y, 0.270]}>
-              <circleGeometry args={[0.058, 14]} />
-              <meshStandardMaterial color="#26262c" roughness={0.5} metalness={0.3} />
-            </mesh>
-          ))}
-          {/* Gold accent ring at the top */}
-          <mesh position={[0, 2.31, 0]}>
-            <boxGeometry args={[0.56, 0.025, 0.50]} />
-            <meshStandardMaterial
-              color="#8a6a1c"
-              emissive="#c8960c"
-              emissiveIntensity={0.5}
-              metalness={0.7}
-              roughness={0.3}
-            />
-          </mesh>
-        </group>
-      ))}
+export function MediaWall() {
+  return (
+    <group position={[0, 0, MEDIA_GROUP_Z]}>
+      <LedTv />
+      <MediaConsole />
+      <SoundbarUnit />
+      <SubwooferUnit />
+      <TowerSpeaker offsetX={-3.0} />
+      <TowerSpeaker offsetX={3.0} />
     </group>
   );
 }

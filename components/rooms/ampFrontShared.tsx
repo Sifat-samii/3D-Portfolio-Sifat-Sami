@@ -16,6 +16,7 @@ export type AmpFrontLayout = {
   headH: number;
   scale: number;
   facing?: AmpFacing;
+  showAccentLight?: boolean;
 };
 
 /** −X wall stacks: mesh sits inside the face plane. */

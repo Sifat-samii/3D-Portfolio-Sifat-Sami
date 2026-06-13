@@ -316,18 +316,8 @@ export function MarshallMg15Front({
   const grilleH = faceH * 0.67;
   const grilleY = cabY - halfH + grilleH / 2 + 0.018;
 
-  const lightX = facing === "studio" ? frontX + 0.38 : frontX - 0.38;
-
   return (
     <group>
-      <pointLight
-        position={[lightX, cabY + faceH * 0.35, 0]}
-        color="#ffe8c8"
-        intensity={0.75}
-        distance={2.2}
-        decay={2}
-      />
-
       <ControlPanel
         frontX={frontX}
         panelY={panelY}

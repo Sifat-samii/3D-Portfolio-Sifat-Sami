@@ -155,6 +155,7 @@ function AmpStack({
     headH: HEAD_Y * SCALE,
     scale: SCALE,
     facing,
+    showAccentLight: false,
   };
 
   return (

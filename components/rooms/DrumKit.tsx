@@ -667,9 +667,6 @@ export function DrumKit() {
         </mesh>
       </group>
 
-      {/* Warm key light catching the bronze + shells */}
-      <pointLight position={[0, 1.9, 0.3]} color="#ffe2b0" intensity={0.8} distance={4.0} decay={2} />
-
       </group>
     </group>
   );

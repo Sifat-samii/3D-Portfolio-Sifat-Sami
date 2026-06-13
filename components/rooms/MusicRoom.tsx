@@ -2,8 +2,6 @@
 
 import { Door } from "@/components/shared/Door";
 import { InteractiveObject } from "@/components/shared/InteractiveObject";
-import { RoomAtmosphere } from "@/components/shared/RoomAtmosphere";
-import { RoomLights } from "@/components/shared/RoomLights";
 import { RoomShell } from "@/components/shared/RoomShell";
 import { roomById } from "@/lib/roomConfig";
 import { DEPTH_SCALE, scaleDepth, scaleWorldZ } from "@/lib/roomLayout";
@@ -15,6 +13,9 @@ import { NorthWallBandPosters } from "@/components/rooms/NorthWallBandPosters";
 import { PedalDisplayRack } from "@/components/rooms/PedalDisplayRack";
 import { StudioDesk } from "@/components/rooms/StudioDesk";
 import { DrumKit } from "@/components/rooms/DrumKit";
+import { GrandPiano } from "@/components/rooms/GrandPiano";
+import { MusicRoomCeilingLights } from "@/components/rooms/MusicRoomCeilingLights";
+import { MusicRoomLinearLights } from "@/components/rooms/MusicRoomLinearLights";
 import { TvWatchCouch } from "@/components/rooms/TvWatchCouch";
 
 /**
@@ -114,8 +115,6 @@ export function MusicRoom() {
           color="#c4c0bb"
           roughness={0.98}
           metalness={0.0}
-          emissive="#a09c98"
-          emissiveIntensity={0.025}
         />
       </mesh>
 
@@ -154,9 +153,11 @@ export function MusicRoom() {
       </mesh>
 
       <DrumKit />
+      <GrandPiano />
 
-      <RoomLights roomId={room.id} position={room.position} />
-      <RoomAtmosphere room={room} count={28} speed={0.5} size={3} />
+      <MusicRoomCeilingLights />
+      <MusicRoomLinearLights />
+
       {room.doors.map((door) => (
         <Door key={door.id} door={door} />
       ))}

@@ -5,51 +5,121 @@
  */
 
 import { RoundedBox } from "@react-three/drei";
-import { createWoolTexture } from "@/lib/sofaTextures";
+import { createMarbleTexture, createWoolTexture } from "@/lib/sofaTextures";
 import { scaleWorldZ } from "@/lib/roomLayout";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 
 const CX = -14.5;
-const CZ = scaleWorldZ(-2.88);
+const CZ = scaleWorldZ(-2.48);
 const FLOOR_Y = 0.10;
-const SOFA_SCALE = 1.08;
+const SOFA_SCALE = 1.20;
+const SOFA_HEIGHT_SCALE = 1.08;
+const CENTER_FORWARD = 0.04;
 
-/** Oatmeal tan wool — uniform upholstery. */
-const WOOL = "#d4c8b4";
+/** Modern oatmeal linen — cool neutral upholstery. */
+const WOOL = "#c8c0b0";
+const PIPING = "#8a8278";
+const LEG_METAL = "#a8a4a0";
 /** Analogous warm tones that complement the sofa. */
 const RUG = "#e0d4c2";
-const STONE = "#b0a090";
-const STONE_VEIN = "#8a7868";
-const BRASS_TRIM = "#b8a080";
 
 const trimMat = new THREE.MeshStandardMaterial({
-  color: BRASS_TRIM,
-  metalness: 0.78,
-  roughness: 0.28,
-});
-
-const stoneMat = new THREE.MeshStandardMaterial({
-  color: STONE,
+  color: "#9a9088",
+  metalness: 0.82,
   roughness: 0.22,
-  metalness: 0.05,
 });
 
-function useWoolMaterial() {
+const legMat = new THREE.MeshStandardMaterial({
+  color: LEG_METAL,
+  metalness: 0.88,
+  roughness: 0.18,
+});
+
+function useSofaMaterials() {
   const map = useMemo(() => createWoolTexture(WOOL), []);
 
   useEffect(() => () => map.dispose(), [map]);
 
-  return useMemo(
+  const wool = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshPhysicalMaterial({
         map,
-        color: "#ffffff",
-        roughness: 0.93,
+        color: "#f6f2ea",
+        roughness: 0.9,
         metalness: 0,
+        sheen: 0.85,
+        sheenRoughness: 0.35,
+        sheenColor: new THREE.Color("#ebe4d8"),
       }),
     [map],
   );
+
+  const piping = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: PIPING,
+        roughness: 0.55,
+        metalness: 0.01,
+      }),
+    [],
+  );
+
+  return { wool, piping };
+}
+
+function useTableMaterials() {
+  const marbleMap = useMemo(() => createMarbleTexture(), []);
+
+  useEffect(() => () => marbleMap.dispose(), [marbleMap]);
+
+  const top = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        map: marbleMap,
+        color: "#f5f0e8",
+        roughness: 0.16,
+        metalness: 0.02,
+        clearcoat: 0.42,
+        clearcoatRoughness: 0.12,
+      }),
+    [marbleMap],
+  );
+
+  const apron = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        map: marbleMap,
+        color: "#ddd4c8",
+        roughness: 0.28,
+        metalness: 0.03,
+        clearcoat: 0.18,
+        clearcoatRoughness: 0.22,
+      }),
+    [marbleMap],
+  );
+
+  const brass = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#c4a870",
+        metalness: 0.92,
+        roughness: 0.26,
+      }),
+    [],
+  );
+
+  const base = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#4a4438",
+        metalness: 0.78,
+        roughness: 0.34,
+      }),
+    [],
+  );
+
+  return { top, apron, brass, base };
 }
 
 type WoolBoxProps = {
@@ -57,20 +127,45 @@ type WoolBoxProps = {
   position?: [number, number, number];
   rotation?: [number, number, number];
   radius?: number;
-  material: THREE.MeshStandardMaterial;
+  material: THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial;
 };
 
-function WoolBox({ args, position = [0, 0, 0], rotation = [0, 0, 0], radius = 0.06, material }: WoolBoxProps) {
+function WoolBox({ args, position = [0, 0, 0], rotation = [0, 0, 0], radius = 0.08, material }: WoolBoxProps) {
   return (
     <RoundedBox
       args={args}
       radius={radius}
-      smoothness={8}
+      smoothness={18}
       position={position}
       rotation={rotation}
       material={material}
       castShadow
       receiveShadow
+    />
+  );
+}
+
+/** Soft cord trim — rounded profile instead of flat strips. */
+function PipingCord({
+  width,
+  position,
+  rotation = [0, 0, 0],
+  material,
+}: {
+  width: number;
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  material: THREE.MeshStandardMaterial;
+}) {
+  return (
+    <RoundedBox
+      args={[width, 0.012, 0.012]}
+      radius={0.006}
+      smoothness={12}
+      position={position}
+      rotation={rotation}
+      material={material}
+      castShadow
     />
   );
 }
@@ -83,13 +178,25 @@ const SEAT_D = 0.96;
 
 type ArcPose = { x: number; z: number; ry: number };
 
-/** Four-seat arc — reversed bow (convex toward the TV). */
-const ARC_MODULES: ArcPose[] = [
-  { x: -1.42, z: -0.14, ry: -0.34 },
-  { x: -0.48, z: 0.02, ry: -0.11 },
-  { x: 0.48, z: 0.02, ry: 0.11 },
-  { x: 1.42, z: -0.14, ry: 0.34 },
+/** Toward the north-wall TV (−Z in sofa-local space). */
+const END_FORWARD = 0.14;
+const INNER_FORWARD = END_FORWARD * 0.5;
+
+const ARC_MODULES_BASE: ArcPose[] = [
+  { x: -1.56, z: -0.15, ry: -0.36 },
+  { x: -0.78, z: 0.01, ry: -0.18 },
+  { x: 0, z: 0.05, ry: 0 },
+  { x: 0.78, z: 0.01, ry: 0.18 },
+  { x: 1.56, z: -0.15, ry: 0.36 },
 ];
+
+/** Ends step forward fully; inner pair at 50%; centre nudged slightly toward TV. */
+const ARC_FORWARD_OFFSETS = [END_FORWARD, INNER_FORWARD, CENTER_FORWARD, INNER_FORWARD, END_FORWARD];
+
+const ARC_MODULES: ArcPose[] = ARC_MODULES_BASE.map((pose, i) => ({
+  ...pose,
+  z: pose.z - ARC_FORWARD_OFFSETS[i],
+}));
 
 function arcMidpoints(modules: ArcPose[]): ArcPose[] {
   const mids: ArcPose[] = [];
@@ -116,55 +223,96 @@ function arcRailPoses(): ArcRailPose[] {
   ];
 }
 
-/** Continuous brass trim rail following the full arc. */
+/** Subtle base skim — low profile, rounded edge. */
 function ArcTrimRail({ poses }: { poses: ArcRailPose[] }) {
   return (
     <>
       {poses.map((pose, i) => (
-        <mesh key={`trim-${i}`} position={[pose.x, 0.026, pose.z]} rotation={[0, pose.ry, 0]} material={trimMat}>
-          <boxGeometry
-            args={[pose.kind === "segment" ? SEG_W + 0.04 : 0.72, 0.007, SEG_D + 0.02]}
-          />
-        </mesh>
+        <RoundedBox
+          key={`trim-${i}`}
+          args={[pose.kind === "segment" ? SEG_W + 0.01 : 0.66, 0.004, SEG_D + 0.008]}
+          radius={0.002}
+          smoothness={8}
+          position={[pose.x, 0.112, pose.z]}
+          rotation={[0, pose.ry, 0]}
+          material={trimMat}
+        />
       ))}
     </>
   );
 }
 
-/** Continuous chrome plinth skim along the arc base. */
-function ArcPlinthSkim({ poses }: { poses: ArcRailPose[] }) {
-  return (
-    <>
-      {poses.map((pose, i) => (
-        <mesh key={`skim-${i}`} position={[pose.x, 0.06, pose.z]} rotation={[0, pose.ry, 0]} material={trimMat}>
-          <boxGeometry args={[pose.kind === "segment" ? SEG_W + 0.06 : 0.76, 0.006, 0.24]} />
-        </mesh>
-      ))}
-    </>
-  );
-}
+const LEG_POSITIONS: [number, number][] = [
+  [-0.36, 0.34],
+  [0.36, 0.34],
+  [-0.36, -0.32],
+  [0.36, -0.32],
+];
 
-/** One arc segment — widened so neighbouring segments overlap seamlessly. */
-function ArcSofaSegment({ wool }: { wool: THREE.MeshStandardMaterial }) {
+const BACK_TILT = -0.09;
+
+/** One arc segment — floating platform, plush cushions, integrated back. */
+function ArcSofaSegment({
+  wool,
+  piping,
+  isEnd = false,
+  armSide = 1,
+}: {
+  wool: THREE.MeshPhysicalMaterial;
+  piping: THREE.MeshStandardMaterial;
+  isEnd?: boolean;
+  armSide?: 1 | -1;
+}) {
   return (
     <group>
-      <WoolBox args={[SEG_W, 0.11, SEG_D]} position={[0, 0.08, 0]} radius={0.045} material={wool} />
-      <WoolBox args={[SEAT_W, 0.13, SEAT_D]} position={[0, 0.30, -0.03]} radius={0.065} material={wool} />
-      <WoolBox args={[SEAT_W, 0.38, 0.20]} position={[0, 0.54, 0.34]} radius={0.07} material={wool} />
-      <WoolBox args={[0.34, 0.34, 0.12]} position={[0, 0.48, 0.08]} radius={0.05} material={wool} />
+      {LEG_POSITIONS.map(([lx, lz]) => (
+        <mesh key={`${lx}-${lz}`} position={[lx, 0.052, lz]} material={legMat} castShadow>
+          <cylinderGeometry args={[0.013, 0.017, 0.104, 24]} />
+        </mesh>
+      ))}
+
+      <WoolBox args={[SEG_W, 0.034, SEG_D]} position={[0, 0.125, 0]} radius={0.034} material={wool} />
+      <WoolBox args={[SEAT_W, 0.138, SEAT_D]} position={[0, 0.285, -0.01]} radius={0.1} material={wool} />
+      <WoolBox args={[SEAT_W * 0.82, 0.028, 0.048]} position={[0, 0.31, -0.46]} radius={0.024} material={wool} />
+
+      <PipingCord width={SEAT_W * 0.9} position={[0, 0.355, -0.44]} material={piping} />
+
+      <group position={[0, 0.5, 0.28]} rotation={[BACK_TILT, 0, 0]}>
+        <WoolBox args={[SEAT_W, 0.38, 0.16]} position={[0, 0.12, 0]} radius={0.1} material={wool} />
+        <WoolBox args={[SEAT_W * 0.88, 0.07, 0.1]} position={[0, 0.33, -0.02]} radius={0.05} material={wool} />
+        <PipingCord width={SEAT_W * 0.9} position={[0, 0.06, 0.09]} material={piping} />
+      </group>
+
+      {isEnd && (
+        <WoolBox
+          args={[0.1, 0.28, SEG_D * 0.84]}
+          position={[armSide * 0.46, 0.35, 0.01]}
+          radius={0.065}
+          material={wool}
+        />
+      )}
     </group>
   );
 }
 
 /** Wool fillers at segment joints — blends seat and back into one piece. */
-function ArcJointFillers({ wool }: { wool: THREE.MeshStandardMaterial }) {
+function ArcJointFillers({
+  wool,
+  piping,
+}: {
+  wool: THREE.MeshPhysicalMaterial;
+  piping: THREE.MeshStandardMaterial;
+}) {
   return (
     <>
       {ARC_MIDPOINTS.map((pose, i) => (
         <group key={`joint-${i}`} position={[pose.x, 0, pose.z]} rotation={[0, pose.ry, 0]}>
-          <WoolBox args={[0.24, 0.11, SEG_D]} position={[0, 0.08, 0]} radius={0.04} material={wool} />
-          <WoolBox args={[0.22, 0.13, SEAT_D]} position={[0, 0.30, -0.03]} radius={0.05} material={wool} />
-          <WoolBox args={[0.22, 0.38, 0.20]} position={[0, 0.54, 0.34]} radius={0.06} material={wool} />
+          <WoolBox args={[0.3, 0.034, SEG_D]} position={[0, 0.125, 0]} radius={0.03} material={wool} />
+          <WoolBox args={[0.28, 0.138, SEAT_D]} position={[0, 0.285, -0.01]} radius={0.09} material={wool} />
+          <group position={[0, 0.5, 0.28]} rotation={[BACK_TILT, 0, 0]}>
+            <WoolBox args={[0.28, 0.38, 0.16]} position={[0, 0.12, 0]} radius={0.095} material={wool} />
+            <PipingCord width={0.24} position={[0, 0.06, 0.09]} material={piping} />
+          </group>
         </group>
       ))}
     </>
@@ -172,28 +320,43 @@ function ArcJointFillers({ wool }: { wool: THREE.MeshStandardMaterial }) {
 }
 
 const TABLE_TOP_R = 0.55;
-const TABLE_TOP_THICK = 0.065;
-const TABLE_TOP_Y = 0.47;
+const TABLE_TOP_THICK = 0.072;
+const TABLE_HEIGHT_LIFT = 0.05;
+const TABLE_TOP_Y = 0.47 + TABLE_HEIGHT_LIFT;
+const TABLE_Z = -1.38;
+const TABLE_SEGMENTS = 64;
 const PROP_SCALE = 1.25;
+
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color: "#1a3028",
+  roughness: 0.06,
+  metalness: 0.1,
+  transmission: 0.72,
+  thickness: 0.35,
+  transparent: true,
+  opacity: 0.95,
+});
+
+const corkMat = new THREE.MeshStandardMaterial({ color: "#6a4a30", roughness: 0.92, metalness: 0 });
+const foilMat = new THREE.MeshStandardMaterial({ color: "#8a8070", metalness: 0.85, roughness: 0.28 });
 
 function WineBottle({ position }: { position: [number, number, number] }) {
   return (
     <group position={position} scale={PROP_SCALE}>
-      <mesh position={[0, 0.11, 0]} castShadow>
-        <cylinderGeometry args={[0.036, 0.038, 0.22, 16]} />
-        <meshStandardMaterial color="#1e3428" roughness={0.12} metalness={0.15} transparent={true} opacity={0.92} />
+      <mesh position={[0, 0.11, 0]} castShadow material={glassMat}>
+        <cylinderGeometry args={[0.036, 0.04, 0.22, 24]} />
       </mesh>
-      <mesh position={[0, 0.24, 0]}>
-        <cylinderGeometry args={[0.014, 0.016, 0.05, 12]} />
-        <meshStandardMaterial color="#1e3428" roughness={0.12} metalness={0.15} transparent={true} opacity={0.9} />
+      <mesh position={[0, 0.24, 0]} material={glassMat}>
+        <cylinderGeometry args={[0.013, 0.016, 0.05, 16]} />
       </mesh>
-      <mesh position={[0, 0.275, 0]}>
-        <cylinderGeometry args={[0.011, 0.011, 0.03, 10]} />
-        <meshStandardMaterial color="#4a3020" roughness={0.75} metalness={0.05} />
+      <mesh position={[0, 0.275, 0]} material={corkMat}>
+        <cylinderGeometry args={[0.011, 0.011, 0.028, 12]} />
       </mesh>
-      <mesh position={[0, 0.06, 0]} rotation={[0, 0, 0]}>
-        <cylinderGeometry args={[0.038, 0.038, 0.018, 16]} />
-        <meshStandardMaterial color="#141414" roughness={0.5} metalness={0.2} />
+      <mesh position={[0, 0.255, 0]} material={foilMat}>
+        <cylinderGeometry args={[0.015, 0.015, 0.018, 16]} />
+      </mesh>
+      <mesh position={[0, 0.06, 0]} material={foilMat}>
+        <cylinderGeometry args={[0.039, 0.039, 0.016, 24]} />
       </mesh>
     </group>
   );
@@ -203,16 +366,20 @@ function BeerCan({ position, label = "#c41e1e" }: { position: [number, number, n
   return (
     <group position={position} scale={PROP_SCALE}>
       <mesh position={[0, 0.059, 0]} castShadow>
-        <cylinderGeometry args={[0.031, 0.031, 0.118, 20]} />
-        <meshStandardMaterial color="#c8c8c8" roughness={0.35} metalness={0.82} />
+        <cylinderGeometry args={[0.031, 0.031, 0.118, 28]} />
+        <meshStandardMaterial color="#d0d0d0" roughness={0.32} metalness={0.88} />
       </mesh>
       <mesh position={[0, 0.069, 0]}>
-        <cylinderGeometry args={[0.032, 0.032, 0.055, 20]} />
-        <meshStandardMaterial color={label} roughness={0.55} metalness={0.15} />
+        <cylinderGeometry args={[0.032, 0.032, 0.055, 28]} />
+        <meshStandardMaterial color={label} roughness={0.5} metalness={0.12} />
       </mesh>
       <mesh position={[0, 0.12, 0]}>
-        <cylinderGeometry args={[0.031, 0.031, 0.004, 20]} />
-        <meshStandardMaterial color="#e0e0e0" metalness={0.9} roughness={0.2} />
+        <cylinderGeometry args={[0.031, 0.031, 0.005, 28]} />
+        <meshStandardMaterial color="#e8e8e8" metalness={0.92} roughness={0.18} />
+      </mesh>
+      <mesh position={[0, 0.123, 0]}>
+        <cylinderGeometry args={[0.008, 0.008, 0.003, 12]} />
+        <meshStandardMaterial color="#b0b0b0" metalness={0.9} roughness={0.25} />
       </mesh>
     </group>
   );
@@ -222,15 +389,15 @@ function Ashtray({ position }: { position: [number, number, number] }) {
   return (
     <group position={position} scale={PROP_SCALE}>
       <mesh position={[0, 0.011, 0]} castShadow>
-        <cylinderGeometry args={[0.058, 0.062, 0.022, 24]} />
-        <meshStandardMaterial color="#3a3a3a" roughness={0.45} metalness={0.55} />
+        <cylinderGeometry args={[0.058, 0.062, 0.022, 32]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.38} metalness={0.62} />
       </mesh>
       <mesh position={[0, 0.015, 0]}>
-        <cylinderGeometry args={[0.044, 0.048, 0.014, 24]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.6} metalness={0.4} />
+        <cylinderGeometry args={[0.044, 0.048, 0.014, 32]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.55} metalness={0.45} />
       </mesh>
       <mesh position={[0.018, 0.023, 0.012]} rotation={[0.1, 0.4, 1.2]}>
-        <cylinderGeometry args={[0.002, 0.002, 0.042, 6]} />
+        <cylinderGeometry args={[0.002, 0.002, 0.042, 8]} />
         <meshStandardMaterial color="#e8e0d0" roughness={0.85} metalness={0} />
       </mesh>
     </group>
@@ -250,40 +417,40 @@ function TabletopProps({ topY }: { topY: number }) {
   );
 }
 
-/** Pedestal round table — thick stone top, apron, column base. */
+/** Pedestal round table — polished stone top, brass edge, bronze base. */
 function RoundCoffeeTable({ position }: { position: [number, number, number] }) {
-  const apronY = TABLE_TOP_Y - TABLE_TOP_THICK - 0.03;
+  const { top, apron, brass, base } = useTableMaterials();
+  const apronY = TABLE_TOP_Y - TABLE_TOP_THICK - 0.028;
+  const edgeY = TABLE_TOP_Y + TABLE_TOP_THICK / 2 - 0.006;
 
   return (
     <group position={position}>
       <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <circleGeometry args={[TABLE_TOP_R + 0.24, 48]} />
+        <circleGeometry args={[TABLE_TOP_R + 0.24, TABLE_SEGMENTS]} />
         <meshStandardMaterial color={RUG} roughness={0.96} metalness={0} />
       </mesh>
 
-      {/* Pedestal foot */}
-      <mesh position={[0, 0.035, 0]} material={trimMat} castShadow>
-        <cylinderGeometry args={[0.36, 0.42, 0.07, 32]} />
+      <mesh position={[0, 0.036, 0]} material={base} castShadow>
+        <cylinderGeometry args={[0.34, 0.4, 0.072, TABLE_SEGMENTS]} />
       </mesh>
-      {/* Column */}
-      <mesh position={[0, 0.22, 0]} material={trimMat} castShadow>
-        <cylinderGeometry args={[0.07, 0.11, 0.28, 20]} />
+      <mesh position={[0, 0.22 + TABLE_HEIGHT_LIFT * 0.45, 0]} material={base} castShadow>
+        <cylinderGeometry args={[0.065, 0.1, 0.28 + TABLE_HEIGHT_LIFT, 32]} />
       </mesh>
-      {/* Stone apron ring */}
-      <mesh position={[0, apronY, 0]} material={stoneMat} castShadow>
-        <cylinderGeometry args={[TABLE_TOP_R - 0.03, TABLE_TOP_R - 0.03, 0.055, 48]} />
+
+      <mesh position={[0, apronY, 0]} material={apron} castShadow>
+        <cylinderGeometry args={[TABLE_TOP_R - 0.02, TABLE_TOP_R - 0.02, 0.048, TABLE_SEGMENTS]} />
       </mesh>
-      {/* Thick top slab */}
-      <mesh position={[0, TABLE_TOP_Y, 0]} material={stoneMat} castShadow receiveShadow>
-        <cylinderGeometry args={[TABLE_TOP_R, TABLE_TOP_R, TABLE_TOP_THICK, 48]} />
+
+      <mesh position={[0, TABLE_TOP_Y, 0]} material={top} castShadow receiveShadow>
+        <cylinderGeometry args={[TABLE_TOP_R, TABLE_TOP_R, TABLE_TOP_THICK, TABLE_SEGMENTS]} />
       </mesh>
-      {/* Bevel lip */}
-      <mesh position={[0, TABLE_TOP_Y - TABLE_TOP_THICK / 2 - 0.008, 0]} material={stoneMat}>
-        <torusGeometry args={[TABLE_TOP_R - 0.01, 0.014, 10, 48]} />
+
+      <mesh position={[0, edgeY, 0]} rotation={[Math.PI / 2, 0, 0]} material={brass} castShadow>
+        <torusGeometry args={[TABLE_TOP_R - 0.018, 0.022, 20, TABLE_SEGMENTS]} />
       </mesh>
-      <mesh position={[0.14, TABLE_TOP_Y + 0.001, 0.08]} rotation={[0, 0.45, 0]}>
-        <boxGeometry args={[0.36, 0.003, 0.009]} />
-        <meshStandardMaterial color={STONE_VEIN} roughness={0.24} metalness={0.03} />
+
+      <mesh position={[0, TABLE_TOP_Y - TABLE_TOP_THICK / 2 + 0.004, 0]} material={brass}>
+        <cylinderGeometry args={[TABLE_TOP_R - 0.04, TABLE_TOP_R - 0.04, 0.006, TABLE_SEGMENTS]} />
       </mesh>
 
       <TabletopProps topY={TABLE_TOP_Y} />
@@ -292,35 +459,44 @@ function RoundCoffeeTable({ position }: { position: [number, number, number] }) 
 }
 
 /** Single unified arc sectional — same curve, one continuous body. */
-function UnifiedArcSofa({ wool }: { wool: THREE.MeshStandardMaterial }) {
+function UnifiedArcSofa({
+  wool,
+  piping,
+}: {
+  wool: THREE.MeshPhysicalMaterial;
+  piping: THREE.MeshStandardMaterial;
+}) {
   const railPoses = arcRailPoses();
 
   return (
     <group>
       {ARC_MODULES.map((mod, i) => (
         <group key={`seg-${i}`} position={[mod.x, 0, mod.z]} rotation={[0, mod.ry, 0]}>
-          <ArcSofaSegment wool={wool} />
+          <ArcSofaSegment
+            wool={wool}
+            piping={piping}
+            isEnd={i === 0 || i === ARC_MODULES.length - 1}
+            armSide={i === 0 ? -1 : 1}
+          />
         </group>
       ))}
 
-      <ArcJointFillers wool={wool} />
+      <ArcJointFillers wool={wool} piping={piping} />
       <ArcTrimRail poses={railPoses} />
-      <ArcPlinthSkim poses={railPoses} />
 
-      <RoundCoffeeTable position={[0, 0, -1.165]} />
+      <RoundCoffeeTable position={[0, 0, TABLE_Z]} />
     </group>
   );
 }
 
 export function TvWatchCouch() {
-  const wool = useWoolMaterial();
+  const { wool, piping } = useSofaMaterials();
 
   return (
     <group position={[CX, FLOOR_Y, CZ]}>
-      <group scale={[SOFA_SCALE, SOFA_SCALE, SOFA_SCALE]}>
-        <UnifiedArcSofa wool={wool} />
+      <group scale={[SOFA_SCALE, SOFA_SCALE * SOFA_HEIGHT_SCALE, SOFA_SCALE]}>
+        <UnifiedArcSofa wool={wool} piping={piping} />
       </group>
-      <pointLight position={[0, 1.4, -0.4]} color="#fff6ec" intensity={0.40} distance={5} decay={2} />
     </group>
   );
 }

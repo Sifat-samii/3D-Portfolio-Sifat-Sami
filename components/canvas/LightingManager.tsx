@@ -22,13 +22,17 @@ export function LightingManager() {
   useFrame((_, delta) => {
     const damping = 1 - Math.pow(0.001, delta);
     const swatch = tmpColor.current;
+    const spotlightOnly = currentRoom === "music";
+    const targetAmbient = spotlightOnly ? 0.11 : preset.ambient;
+    const targetHemi = spotlightOnly ? 0.13 : preset.hemiIntensity;
+    const targetDirectional = spotlightOnly ? 0.16 : 0.55;
 
     if (ambientRef.current) {
       swatch.set(preset.color);
       ambientRef.current.color.lerp(swatch, damping);
       ambientRef.current.intensity = MathUtils.lerp(
         ambientRef.current.intensity,
-        preset.ambient,
+        targetAmbient,
         damping,
       );
     }
@@ -40,7 +44,7 @@ export function LightingManager() {
       hemiRef.current.groundColor.lerp(swatch, damping);
       hemiRef.current.intensity = MathUtils.lerp(
         hemiRef.current.intensity,
-        preset.hemiIntensity,
+        targetHemi,
         damping,
       );
     }
@@ -55,6 +59,11 @@ export function LightingManager() {
     if (directionalRef.current) {
       directionalRef.current.position.x = MathUtils.lerp(directionalRef.current.position.x, roomX + 6, damping);
       directionalRef.current.position.z = MathUtils.lerp(directionalRef.current.position.z, roomZ + 8, damping);
+      directionalRef.current.intensity = MathUtils.lerp(
+        directionalRef.current.intensity,
+        targetDirectional,
+        damping,
+      );
     }
   });
 

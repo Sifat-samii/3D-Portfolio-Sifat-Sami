@@ -169,7 +169,9 @@ function HeadFront({ headFrontX, headY, headW, headH, scale, facing = "north" }:
 export function SoldanoFront(props: AmpFrontLayout) {
   return (
     <group>
-      <pointLight position={[props.cabFrontX - 0.4, props.cabY + props.cabH * 0.5, 0]} color="#e8ecff" intensity={0.75} distance={2.5} decay={2} />
+      {props.showAccentLight !== false ? (
+        <pointLight position={[props.cabFrontX - 0.4, props.cabY + props.cabH * 0.5, 0]} color="#e8ecff" intensity={0.75} distance={2.5} decay={2} />
+      ) : null}
       <CabinetFront {...props} />
       <HeadFront {...props} />
     </group>
